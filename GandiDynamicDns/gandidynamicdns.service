@@ -1,0 +1,21 @@
+# Copy this file to /etc/systemd/system/
+#
+# Install:           sudo systemctl daemon-reload
+# Enable auto-start: sudo systemctl enable gandidynamicdns.service
+# Start:             sudo systemctl start gandidynamicdns.service
+# Check status:      sudo systemctl status gandidynamicdns.service
+# Read logs:         sudo journalctl -u gandidynamicdns.service
+#
+# Source: https://devblogs.microsoft.com/dotnet/net-core-and-systemd/
+
+[Unit]
+Description=Gandi Dynamic DNS
+
+[Service]
+Type=notify
+ExecStart=/usr/local/bin/gandidynamicdns
+WorkingDirectory=/usr/local/bin/
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
