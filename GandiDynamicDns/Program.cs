@@ -15,8 +15,18 @@ appConfig.Configuration.AlsoSearchForJsonFilesInExecutableDirectory();
 
 appConfig.Services
     .AddSystemd()
-    .AddWindowsService()
+    .AddWindowsService(options => options.ServiceName = "GandiDynamicDns")
     .Configure<Configuration>(appConfig.Configuration)
+    .PostConfigure<Configuration>(configuration => {
+        configuration.subdomain = configuration.subdomain.TrimEnd('.');
+        if (string.IsNullOrWhiteSpace(configuration.subdomain)) {
+            configuration.subdomain = "@";
+        }
+
+        if (configuration.dnsRecordTimeToLive < Configuration.MINIMUM_TIME_TO_LIVE) {
+            configuration.dnsRecordTimeToLive = Configuration.MINIMUM_TIME_TO_LIVE;
+        }
+    })
     .AddSingleton(_ => new HttpClient(new SocketsHttpHandler {
         AllowAutoRedirect        = true,
         ConnectTimeout           = TimeSpan.FromSeconds(10),
@@ -27,7 +37,13 @@ appConfig.Services
         }
     }))
     .AddHostedService<GandiDynamicDnsService>()
-    .AddSingleton(provider => new GandiLiveDns { Apikey = provider.GetRequiredService<IOptions<Configuration>>().Value.gandiApiKey })
+    .AddSingleton(provider => {
+        string apiKey = provider.GetRequiredService<IOptions<Configuration>>().Value.gandiApiKey;
+        if (string.IsNullOrWhiteSpace(apiKey) || apiKey == "<Generate an API key on https://account.gandi.net/en/users/_/security>") {
+            throw new ArgumentException($"Missing configuration option {nameof(Configuration.gandiApiKey)} in appsettings.json");
+        }
+        return new GandiLiveDns { Apikey = apiKey };
+    })
     .AddTransient<IStunClient5389, MultiServerStunClient>();
 
 using IHost app = appConfig.Build();

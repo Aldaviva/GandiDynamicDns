@@ -18,11 +18,7 @@ public class GandiDynamicDnsService(GandiLiveDns gandi, IStunClient5389 stun, IO
 
     private const string DNS_A_RECORD = "A";
 
-    private static readonly TimeSpan MINIMUM_TIME_TO_LIVE = TimeSpan.FromSeconds(300); // Gandi restriction
-
     public IPAddress? selfWanAddress { get; private set; }
-
-    private TimeSpan timeToLive => configuration.Value.dnsRecordTimeToLive is { } ttl && ttl >= MINIMUM_TIME_TO_LIVE ? ttl : MINIMUM_TIME_TO_LIVE;
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken) {
         IEnumerable<GandiLiveDnsListRecord> existingDnsRecords = await gandi.GetDomainRecords(configuration.Value.domain, stoppingToken);
@@ -53,7 +49,8 @@ public class GandiDynamicDnsService(GandiLiveDns gandi, IStunClient5389 stun, IO
     }
 
     private async Task updateDnsRecord(IPAddress currentIPAddress, CancellationToken stoppingToken = default) {
-        await gandi.PostDomainRecord(configuration.Value.domain, configuration.Value.subdomain, DNS_A_RECORD, [currentIPAddress.ToString()], (int) timeToLive.TotalSeconds, stoppingToken);
+        await gandi.PostDomainRecord(configuration.Value.domain, configuration.Value.subdomain, DNS_A_RECORD, [currentIPAddress.ToString()], (int) configuration.Value.dnsRecordTimeToLive.TotalSeconds,
+            stoppingToken);
     }
 
     private async Task<IPAddress?> getCurrentAddress(CancellationToken stoppingToken = default) {

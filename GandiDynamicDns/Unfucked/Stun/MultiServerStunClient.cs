@@ -1,4 +1,5 @@
-﻿using STUN.Enums;
+﻿using GandiDynamicDns.Unfucked.Caching;
+using STUN.Enums;
 using STUN.StunResult;
 using System.Net;
 using System.Net.Sockets;
@@ -9,10 +10,11 @@ public class MultiServerStunClient(HttpClient http, ILogger<MultiServerStunClien
 
     private const string STUN_LIST_CACHE_KEY = "always-on-stun";
 
-    private static readonly Random     RANDOM                   = new();
-    private static readonly IPEndPoint LOCAL_HOST               = new(IPAddress.Any, 0);
-    private static readonly TimeSpan   STUN_LIST_CACHE_DURATION = TimeSpan.FromDays(1);
-    private static readonly Uri        STUN_SERVER_LIST_URL     = new("https://raw.githubusercontent.com/pradt2/always-online-stun/master/valid_ipv4s.txt");
+    private static readonly Random                     RANDOM                   = new();
+    private static readonly IPEndPoint                 LOCAL_HOST               = new(IPAddress.Any, 0);
+    private static readonly TimeSpan                   STUN_LIST_CACHE_DURATION = TimeSpan.FromDays(1);
+    private static readonly Uri                        STUN_SERVER_LIST_URL     = new("https://raw.githubusercontent.com/pradt2/always-online-stun/master/valid_ipv4s.txt");
+    private static readonly IMemoryCache<IPEndPoint[]> STUN_LIST_CACHE          = new MemoryCache<IPEndPoint[]>($"{nameof(MultiServerStunClient)}.{nameof(STUN_LIST_CACHE)}");
 
     private static readonly IList<DnsEndPoint> FALLBACK_STUN_SERVER_HOSTS = [
         new DnsEndPoint("stun.ekiga.net", 3478),
@@ -25,10 +27,10 @@ public class MultiServerStunClient(HttpClient http, ILogger<MultiServerStunClien
 
     public StunResult5389 State { get; private set; } = new();
 
-    private readonly MemoryCache<IPEndPoint[]> stunListCache = new($"{nameof(MultiServerStunClient)}.{nameof(stunListCache)}");
+    public IPEndPoint Server { get; private set; } = null!;
 
     private async Task<IEnumerable<IStunClient5389>> getStunClients(CancellationToken ct = default) {
-        IPEndPoint[] servers = await stunListCache.GetOrAdd(STUN_LIST_CACHE_KEY, async () => await fetchStunServers(ct), STUN_LIST_CACHE_DURATION);
+        IPEndPoint[] servers = await STUN_LIST_CACHE.GetOrAdd(STUN_LIST_CACHE_KEY, async () => await fetchStunServers(ct), STUN_LIST_CACHE_DURATION);
 
         RANDOM.Shuffle(servers);
 
@@ -51,18 +53,13 @@ public class MultiServerStunClient(HttpClient http, ILogger<MultiServerStunClien
         }
     }
 
-    public void Dispose() {
-        stunListCache.Dispose();
-        GC.SuppressFinalize(this);
-    }
-
     public async ValueTask QueryAsync(CancellationToken cancellationToken = default) {
         foreach (IStunClient5389 stun in await getStunClients(cancellationToken)) {
             using (stun) {
                 Server = stun.Server;
                 await stun.QueryAsync(cancellationToken);
                 State = stun.State;
-                if (isSuccessfulResult(State)) {
+                if (isSuccessfulResponse(State)) {
                     break;
                 } else {
                     logger.LogWarning("STUN request to {host} failed, trying another server", stun.Server.ToString());
@@ -77,7 +74,7 @@ public class MultiServerStunClient(HttpClient http, ILogger<MultiServerStunClien
                 Server = stun.Server;
                 logger.LogDebug("Sending STUN request to {host}", stun.Server.ToString());
                 State = await stun.BindingTestAsync(cancellationToken);
-                if (isSuccessfulResult(State)) {
+                if (isSuccessfulResponse(State)) {
                     return State;
                 } else {
                     logger.LogWarning("STUN request to {host} failed, trying another server", stun.Server.ToString());
@@ -93,7 +90,7 @@ public class MultiServerStunClient(HttpClient http, ILogger<MultiServerStunClien
                 Server = stun.Server;
                 await stun.MappingBehaviorTestAsync(cancellationToken);
                 State = stun.State;
-                if (isSuccessfulResult(State)) {
+                if (isSuccessfulResponse(State)) {
                     break;
                 } else {
                     logger.LogWarning("STUN request to {host} failed, trying another server", stun.Server.ToString());
@@ -108,7 +105,7 @@ public class MultiServerStunClient(HttpClient http, ILogger<MultiServerStunClien
                 Server = stun.Server;
                 await stun.FilteringBehaviorTestAsync(cancellationToken);
                 State = stun.State;
-                if (isSuccessfulResult(State)) {
+                if (isSuccessfulResponse(State)) {
                     break;
                 } else {
                     logger.LogWarning("STUN request to {host} failed, trying another server", stun.Server.ToString());
@@ -117,9 +114,12 @@ public class MultiServerStunClient(HttpClient http, ILogger<MultiServerStunClien
         }
     }
 
-    private static bool isSuccessfulResult(StunResult5389 result) => result.BindingTestResult == BindingTestResult.Success && result.FilteringBehavior != FilteringBehavior.UnsupportedServer
-        && result.MappingBehavior != MappingBehavior.Fail && result.MappingBehavior != MappingBehavior.UnsupportedServer;
+    private static bool isSuccessfulResponse(StunResult5389 response) =>
+        response.BindingTestResult == BindingTestResult.Success &&
+        response.FilteringBehavior != FilteringBehavior.UnsupportedServer &&
+        response.MappingBehavior != MappingBehavior.Fail &&
+        response.MappingBehavior != MappingBehavior.UnsupportedServer;
 
-    public IPEndPoint Server { get; private set; } = null!;
+    public void Dispose() => GC.SuppressFinalize(this);
 
 }

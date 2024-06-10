@@ -1,10 +1,9 @@
 ﻿using System.Collections.Specialized;
 using System.Runtime.Caching;
-using MemoryCache = System.Runtime.Caching.MemoryCache;
 
 // ReSharper disable InconsistentNaming
 
-namespace GandiDynamicDns.Unfucked;
+namespace GandiDynamicDns.Unfucked.Caching;
 
 public class MemoryCache<T>(string name = "", NameValueCollection? config = null, bool ignoreConfigSection = false): IMemoryCache<T> where T: notnull {
 

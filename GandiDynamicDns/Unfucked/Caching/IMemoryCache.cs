@@ -2,7 +2,7 @@
 
 // ReSharper disable InconsistentNaming
 
-namespace GandiDynamicDns.Unfucked;
+namespace GandiDynamicDns.Unfucked.Caching;
 
 public interface IMemoryCache<T> where T: notnull {
 
