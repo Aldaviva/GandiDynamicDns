@@ -24,7 +24,7 @@ Automatically update a DNS A record in Gandi LiveDNS whenever your computer's pu
     - IPv6 is not supported because router NATs don't support IPv6 port forwarding
 
 ## Installation
-1. Download the [latest release](https://github.com/Aldaviva/GandiDynamicDns/releases/latest)
+1. Download the [latest release](https://github.com/Aldaviva/GandiDynamicDns/releases/latest/download/GandiDynamicDns-win-x64.zip)
 1. Extract the archive to a directory, such as `C:\Program Files\GandiDynamicDns\`
 1. Install the service
     - Windows: `& '.\Install service.ps1'`
