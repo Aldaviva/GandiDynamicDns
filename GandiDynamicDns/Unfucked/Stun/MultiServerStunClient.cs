@@ -2,21 +2,21 @@
 using STUN.Enums;
 using STUN.StunResult;
 using System.Net;
-using System.Net.Sockets;
 
 namespace GandiDynamicDns.Unfucked.Stun;
 
 public class MultiServerStunClient(HttpClient http, ILogger<MultiServerStunClient> logger): IStunClient5389 {
 
-    private const string STUN_LIST_CACHE_KEY = "always-on-stun";
+    private static readonly Random     RANDOM                   = new();
+    private static readonly IPEndPoint LOCAL_HOST               = new(IPAddress.Any, 0);
+    private static readonly TimeSpan   STUN_LIST_CACHE_DURATION = TimeSpan.FromDays(1);
 
-    private static readonly Random                     RANDOM                   = new();
-    private static readonly IPEndPoint                 LOCAL_HOST               = new(IPAddress.Any, 0);
-    private static readonly TimeSpan                   STUN_LIST_CACHE_DURATION = TimeSpan.FromDays(1);
-    private static readonly Uri                        STUN_SERVER_LIST_URL     = new("https://raw.githubusercontent.com/pradt2/always-online-stun/master/valid_ipv4s.txt");
-    private static readonly IMemoryCache<IPEndPoint[]> STUN_LIST_CACHE          = new MemoryCache<IPEndPoint[]>($"{nameof(MultiServerStunClient)}.{nameof(STUN_LIST_CACHE)}");
+    // ExceptionAdjustment: M:System.Uri.#ctor(System.String) -T:System.UriFormatException
+    private static readonly Uri STUN_SERVER_LIST_URL = new("https://raw.githubusercontent.com/pradt2/always-online-stun/master/valid_ipv4s.txt");
 
-    private static readonly IList<DnsEndPoint> FALLBACK_STUN_SERVER_HOSTS = [
+    private static readonly IMemoryCache<IEnumerable<IPEndPoint>> SERVERS_CACHE = new MemoryCache<IEnumerable<IPEndPoint>>($"{nameof(MultiServerStunClient)}.{nameof(SERVERS_CACHE)}");
+
+    private static readonly IList<DnsEndPoint> FALLBACK_SERVERS = [
         new DnsEndPoint("stun.ekiga.net", 3478),
         new DnsEndPoint("stun.freeswitch.org", 3478),
         new DnsEndPoint("stun1.l.google.com", 19302),
@@ -30,14 +30,16 @@ public class MultiServerStunClient(HttpClient http, ILogger<MultiServerStunClien
     public IPEndPoint Server { get; private set; } = null!;
 
     private async Task<IEnumerable<IStunClient5389>> getStunClients(CancellationToken ct = default) {
-        IPEndPoint[] servers = await STUN_LIST_CACHE.GetOrAdd(STUN_LIST_CACHE_KEY, async () => await fetchStunServers(ct), STUN_LIST_CACHE_DURATION);
+        const string STUN_LIST_CACHE_KEY = "always-on-stun";
+
+        IPEndPoint[] servers = (await SERVERS_CACHE.GetOrAdd(STUN_LIST_CACHE_KEY, async () => await fetchStunServers(ct), STUN_LIST_CACHE_DURATION)).ToArray();
 
         RANDOM.Shuffle(servers);
 
         return servers.Select(serverHost => new StunClient5389UDP(serverHost, LOCAL_HOST));
     }
 
-    private async Task<IPEndPoint[]> fetchStunServers(CancellationToken ct) {
+    private async Task<IEnumerable<IPEndPoint>> fetchStunServers(CancellationToken ct) {
         try {
             logger.LogDebug("Fetching list of STUN servers from pradt2/always-online-stun");
             IPEndPoint[] servers = (await http.GetStringAsync(STUN_SERVER_LIST_URL, ct)).TrimEnd().Split('\n').Select(line => {
@@ -45,12 +47,18 @@ public class MultiServerStunClient(HttpClient http, ILogger<MultiServerStunClien
                     return new IPEndPoint(IPAddress.Parse(columns[0]), ushort.Parse(columns[1]));
                 })
                 .ToArray();
-            logger.LogDebug("Fetched {count:N0} STUN servers", servers.Length);
+            logger.LogDebug("Fetched {count:N0} STUN servers", servers.LongLength);
             return servers;
+        } catch (HttpRequestException) {
+            return await getFallbackStunServers();
+        } catch (TaskCanceledException) {
+            return await getFallbackStunServers();
         } catch (Exception e) when (e is not OutOfMemoryException) {
-            return await Task.WhenAll(FALLBACK_STUN_SERVER_HOSTS.Select(async dnsHost =>
-                new IPEndPoint((await Dns.GetHostAddressesAsync(dnsHost.Host, AddressFamily.InterNetwork, ct)).First(), dnsHost.Port)));
+            return await getFallbackStunServers();
         }
+
+        async Task<IEnumerable<IPEndPoint>> getFallbackStunServers() => (await Task.WhenAll(FALLBACK_SERVERS.Select(async dnsHost =>
+            await dnsHost.Resolve(ct)))).Compact();
     }
 
     public async ValueTask QueryAsync(CancellationToken cancellationToken = default) {

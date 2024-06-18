@@ -1,5 +1,6 @@
 ﻿using G6.GandiLiveDns;
 using GandiDynamicDns;
+using GandiDynamicDns.Dns;
 using GandiDynamicDns.Unfucked.Stun;
 using Microsoft.Extensions.Options;
 using System.Net.Security;
@@ -14,19 +15,12 @@ appConfig.Logging.AddConsole(options => options.FormatterName = MyConsoleFormatt
 appConfig.Configuration.AlsoSearchForJsonFilesInExecutableDirectory();
 
 appConfig.Services
+    .AddLogging()
+    .AddInjectableProviders()
     .AddSystemd()
     .AddWindowsService(options => options.ServiceName = "GandiDynamicDns")
     .Configure<Configuration>(appConfig.Configuration)
-    .PostConfigure<Configuration>(configuration => {
-        configuration.subdomain = configuration.subdomain.TrimEnd('.');
-        if (string.IsNullOrWhiteSpace(configuration.subdomain)) {
-            configuration.subdomain = "@";
-        }
-
-        if (configuration.dnsRecordTimeToLive < Configuration.MINIMUM_TIME_TO_LIVE) {
-            configuration.dnsRecordTimeToLive = Configuration.MINIMUM_TIME_TO_LIVE;
-        }
-    })
+    .PostConfigure<Configuration>(configuration => configuration.fix())
     .AddSingleton(_ => new HttpClient(new SocketsHttpHandler {
         AllowAutoRedirect        = true,
         ConnectTimeout           = TimeSpan.FromSeconds(10),
@@ -36,7 +30,7 @@ appConfig.Services
             EnabledSslProtocols = SslProtocols.Tls12 | SslProtocols.Tls13
         }
     }))
-    .AddHostedService<GandiDynamicDnsService>()
+    .AddHostedService<DynamicDnsServiceImpl>()
     .AddSingleton(provider => {
         string apiKey = provider.GetRequiredService<IOptions<Configuration>>().Value.gandiApiKey;
         if (string.IsNullOrWhiteSpace(apiKey) || apiKey == "<Generate an API key on https://account.gandi.net/en/users/_/security>") {
@@ -44,7 +38,9 @@ appConfig.Services
         }
         return new GandiLiveDns { Apikey = apiKey };
     })
-    .AddTransient<IStunClient5389, MultiServerStunClient>();
+    .AddSingleton<DnsManager, GandiDnsManager>()
+    .AddTransient<IStunClient5389, MultiServerStunClient>()
+    .AddSingleton<SelfWanAddressClient, ThreadSafeMultiServerStunClient>();
 
 using IHost app = appConfig.Build();
 await app.RunAsync();

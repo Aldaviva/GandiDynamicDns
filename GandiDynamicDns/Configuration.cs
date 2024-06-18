@@ -1,13 +1,23 @@
-﻿namespace GandiDynamicDns;
+﻿// ReSharper disable PropertyCanBeMadeInitOnly.Global - set by config
+// ReSharper disable MemberCanBePrivate.Global - set by config
+
+using GandiDynamicDns.Dns;
+
+namespace GandiDynamicDns;
 
 public record Configuration {
 
-    public static readonly TimeSpan MINIMUM_TIME_TO_LIVE = TimeSpan.FromSeconds(300);
+    public required string gandiApiKey { get; init; }
+    public required string domain { get; init; }
+    public string subdomain { get; set; } = string.Empty;
+    public TimeSpan updateInterval { get; init; } = GandiDnsManager.MINIMUM_TIME_TO_LIVE;
+    public TimeSpan dnsRecordTimeToLive { get; set; } = GandiDnsManager.MINIMUM_TIME_TO_LIVE;
 
-    public required string gandiApiKey { get; set; }
-    public required string domain { get; set; }
-    public required string subdomain { get; set; }
-    public TimeSpan updateInterval { get; set; } = MINIMUM_TIME_TO_LIVE;
-    public TimeSpan dnsRecordTimeToLive { get; set; } = MINIMUM_TIME_TO_LIVE;
+    public void fix() {
+        subdomain = subdomain.TrimEnd('.');
+        if (subdomain.Length == 0) {
+            subdomain = "@";
+        }
+    }
 
 }
