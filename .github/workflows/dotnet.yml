@@ -31,4 +31,6 @@ jobs:
       with:
         name: ${{ env.ProjectName }}.exe
         path: ${{ env.ProjectName }}/bin/Release/net8.0/${{ env.TargetPlatform }}/publish/*.exe
+        path: ${{ env.ProjectName }}/bin/Release/net8.0/${{ env.TargetPlatform }}/publish/appsettings.json
+        path: ${{ env.ProjectName }}/bin/Release/net8.0/${{ env.TargetPlatform }}/publish/Install service.ps1
         if-no-files-found: error
