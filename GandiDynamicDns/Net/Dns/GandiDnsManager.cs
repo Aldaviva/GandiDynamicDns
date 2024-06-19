@@ -1,6 +1,6 @@
 ﻿using G6.GandiLiveDns;
 
-namespace GandiDynamicDns.Dns;
+namespace GandiDynamicDns.Net.Dns;
 
 public interface DnsManager {
 

@@ -3,7 +3,9 @@
 
 [![GitHub Actions](https://img.shields.io/github/actions/workflow/status/Aldaviva/GandiDynamicDns/dotnet.yml?branch=master&logo=github)](https://github.com/Aldaviva/GandiDynamicDns/actions/workflows/dotnet.yml)
 
-Automatically update a DNS A record in Gandi LiveDNS whenever your computer's public IP address changes, detected automatically using [STUN](https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API/Protocols#stun).
+Automatically update a DNS A record in Gandi LiveDNS whenever your computer's public IP address changes, detected automatically using a [large, auto-updating pool](https://github.com/pradt2/always-online-stun) of public [STUN](https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API/Protocols#stun) servers.
+
+This is an alternative to filling out monthly CAPTCHAs for [No-IP](https://www.noip.com) or paying for [DynDNS](https://account.dyn.com), if you happen to already be paying for a domain name from the world's greatest domain registrar.
 
 <!-- MarkdownTOC autolink="true" bracket="round" autoanchor="false" levels="1,2" -->
 
@@ -19,16 +21,17 @@ Automatically update a DNS A record in Gandi LiveDNS whenever your computer's pu
 - [Gandi domain name](https://www.gandi.net/en-US/domain)
     - ✅ Domain must be using [LiveDNS](https://www.gandi.net/en-US/domain/dns), the default for new domains (`ns-*-*.gandi.net`)
     - ❌ Classic DNS (`*.dns.gandi.net`) is incompatible; you will need to [migrate to LiveDNS](https://docs.gandi.net/en/domain_names/common_operations/changing_nameservers.html#switching-to-livedns)
-    - ❌ External nameservers (with glue records) are incompatible; you will need to update the record on the external nameserver instead of Gandi's nameservers
+    - ❌ External nameservers (with glue records) are incompatible; you will need to update the record on the external nameserver instead of on Gandi's nameservers
 - Your computer must have a public WAN IPv4 address
     - IPv6 is not supported because router NATs don't support IPv6 port forwarding
 
 ## Installation
-1. Download the [latest release](https://github.com/Aldaviva/GandiDynamicDns/releases/latest/download/GandiDynamicDns-win-x64.zip)
-1. Extract the archive to a directory, such as `C:\Program Files\GandiDynamicDns\`
+1. Download the [latest release](https://github.com/Aldaviva/GandiDynamicDns/releases/latest) ZIP archive for your operating system and CPU architecture
+1. Extract the ZIP archive to a directory, such as `C:\Program Files\GandiDynamicDns\` or `/opt/gandidynamicdns/`
+    - Only extract `appsettings.json` during a new installation, not when upgrading an existing installation
 1. Install the service
     - Windows: `& '.\Install service.ps1'`
-    - Linux:
+    - Linux with systemd:
         ```sh
         sudo cp gandidynamicdns.service /etc/systemd/system/
         sudo systemctl daemon-reload

@@ -1,7 +1,9 @@
 ﻿using G6.GandiLiveDns;
 using GandiDynamicDns;
-using GandiDynamicDns.Dns;
+using GandiDynamicDns.Net.Dns;
+using GandiDynamicDns.Net.Stun;
 using GandiDynamicDns.Unfucked.Stun;
+using GandiDynamicDns.Util;
 using Microsoft.Extensions.Options;
 using System.Net.Security;
 using System.Security.Authentication;

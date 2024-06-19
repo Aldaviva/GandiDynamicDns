@@ -1,9 +1,10 @@
 ﻿using GandiDynamicDns.Unfucked.DependencyInjection;
+using GandiDynamicDns.Unfucked.Stun;
 using STUN.Enums;
 using STUN.StunResult;
 using System.Net;
 
-namespace GandiDynamicDns.Unfucked.Stun;
+namespace GandiDynamicDns.Net.Stun;
 
 public interface SelfWanAddressClient {
 

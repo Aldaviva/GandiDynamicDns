@@ -1,4 +1,4 @@
-﻿namespace GandiDynamicDns.Dns;
+﻿namespace GandiDynamicDns.Net.Dns;
 
 public enum DnsRecordType {
 

@@ -1,7 +1,7 @@
 ﻿// ReSharper disable PropertyCanBeMadeInitOnly.Global - set by config
 // ReSharper disable MemberCanBePrivate.Global - set by config
 
-using GandiDynamicDns.Dns;
+using GandiDynamicDns.Net.Dns;
 
 namespace GandiDynamicDns;
 

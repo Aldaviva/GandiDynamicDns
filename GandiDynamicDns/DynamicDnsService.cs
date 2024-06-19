@@ -1,5 +1,5 @@
-﻿using GandiDynamicDns.Dns;
-using GandiDynamicDns.Unfucked.Stun;
+﻿using GandiDynamicDns.Net.Dns;
+using GandiDynamicDns.Net.Stun;
 using GandiDynamicDns.Unfucked.Tasks;
 using Microsoft.Extensions.Options;
 using System.Net;
@@ -41,7 +41,7 @@ public class DynamicDnsServiceImpl(DnsManager dns, SelfWanAddressClient stun, IO
             selfWanAddress = newAddress;
             await updateDnsRecord(newAddress, ct);
         } else {
-            logger.LogDebug("Not updating DNS {type} record for {subdomain}.{domain} because it is already set to {new}", DNS_A_RECORD, configuration.Value.subdomain, configuration.Value.domain,
+            logger.LogDebug("Not updating DNS {type} record for {subdomain}.{domain} because it is already set to {value}", DNS_A_RECORD, configuration.Value.subdomain, configuration.Value.domain,
                 selfWanAddress);
         }
     }

@@ -9,29 +9,42 @@ jobs:
   build:
     env:
       ProjectName: GandiDynamicDns
-      TargetPlatform: win-x64
 
-    runs-on: windows-latest
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            targetPlatform: linux-x64
+          - os: ubuntu-latest
+            targetPlatform: linux-arm
+          - os: ubuntu-latest
+            targetPlatform: linux-arm64
+          - os: windows-latest
+            targetPlatform: win-x64
+
+    runs-on: ${{ matrix.os }}
 
     steps:
     - name: Clone
       uses: actions/checkout@v4
-        
+
     - name: Restore
       run: dotnet restore ${{ env.ProjectName }} --locked-mode --verbosity normal
 
     - name: Build
-      run: dotnet build ${{ env.ProjectName }} --no-restore --runtime ${{ env.TargetPlatform }} --configuration Release --no-self-contained --verbosity normal
+      run: dotnet build ${{ env.ProjectName }} --no-restore --runtime ${{ matrix.TargetPlatform }} --configuration Release --no-self-contained
 
     - name: Publish
-      run: dotnet publish ${{ env.ProjectName }} --no-build --configuration Release -p:PublishSingleFile=true --runtime ${{ env.TargetPlatform }} --self-contained false
+      run: dotnet publish ${{ env.ProjectName }} --no-build --runtime ${{ matrix.TargetPlatform }} --configuration Release --no-self-contained -p:PublishSingleFile=true
 
     - name: Upload build artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: ${{ env.ProjectName }}-${{ env.TargetPlatform }}
+        name: ${{ env.ProjectName }}-${{ matrix.TargetPlatform }}
         path: |
-          ${{ env.ProjectName }}/bin/Release/net8.0/${{ env.TargetPlatform }}/publish/*.exe
-          ${{ env.ProjectName }}/bin/Release/net8.0/${{ env.TargetPlatform }}/publish/appsettings.json
-          ${{ env.ProjectName }}/bin/Release/net8.0/${{ env.TargetPlatform }}/publish/Install service.ps1
+          ${{ env.ProjectName }}/bin/Release/net8.0/${{ matrix.TargetPlatform }}/publish/${{ env.ProjectName }}.exe
+          ${{ env.ProjectName }}/bin/Release/net8.0/${{ matrix.TargetPlatform }}/publish/${{ env.ProjectName }}
+          ${{ env.ProjectName }}/bin/Release/net8.0/${{ matrix.TargetPlatform }}/publish/appsettings.json
+          ${{ env.ProjectName }}/bin/Release/net8.0/${{ matrix.TargetPlatform }}/publish/Install service.ps1
+          ${{ env.ProjectName }}/bin/Release/net8.0/${{ matrix.TargetPlatform }}/publish/gandidynamicdns.service
         if-no-files-found: error

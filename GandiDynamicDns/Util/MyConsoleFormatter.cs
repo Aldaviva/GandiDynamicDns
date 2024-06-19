@@ -3,7 +3,7 @@ using Microsoft.Extensions.Logging.Console;
 using Microsoft.Extensions.Options;
 using System.Diagnostics.CodeAnalysis;
 
-namespace GandiDynamicDns;
+namespace GandiDynamicDns.Util;
 
 [ExcludeFromCodeCoverage]
 public class MyConsoleFormatter(IOptions<MyConsoleFormatter.MyConsoleOptions> options): ConsoleFormatter(NAME) {

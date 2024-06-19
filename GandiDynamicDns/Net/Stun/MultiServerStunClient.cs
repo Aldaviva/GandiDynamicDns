@@ -1,9 +1,10 @@
 ﻿using GandiDynamicDns.Unfucked.Caching;
+using GandiDynamicDns.Unfucked.Stun;
 using STUN.Enums;
 using STUN.StunResult;
 using System.Net;
 
-namespace GandiDynamicDns.Unfucked.Stun;
+namespace GandiDynamicDns.Net.Stun;
 
 public class MultiServerStunClient(HttpClient http, ILogger<MultiServerStunClient> logger): IStunClient5389 {
 
@@ -33,21 +34,22 @@ public class MultiServerStunClient(HttpClient http, ILogger<MultiServerStunClien
         const string STUN_LIST_CACHE_KEY = "always-on-stun";
 
         IPEndPoint[] servers = (await SERVERS_CACHE.GetOrAdd(STUN_LIST_CACHE_KEY, async () => await fetchStunServers(ct), STUN_LIST_CACHE_DURATION)).ToArray();
-
         RANDOM.Shuffle(servers);
-
         return servers.Select(serverHost => new StunClient5389UDP(serverHost, LOCAL_HOST));
     }
 
     private async Task<IEnumerable<IPEndPoint>> fetchStunServers(CancellationToken ct) {
         try {
             logger.LogDebug("Fetching list of STUN servers from pradt2/always-online-stun");
-            IPEndPoint[] servers = (await http.GetStringAsync(STUN_SERVER_LIST_URL, ct)).TrimEnd().Split('\n').Select(line => {
-                    string[] columns = line.Split(':', 2);
+            ICollection<IPEndPoint> servers = (await http.GetStringAsync(STUN_SERVER_LIST_URL, ct)).TrimEnd().Split('\n').Select(line => {
+                string[] columns = line.Split(':', 2);
+                try {
                     return new IPEndPoint(IPAddress.Parse(columns[0]), ushort.Parse(columns[1]));
-                })
-                .ToArray();
-            logger.LogDebug("Fetched {count:N0} STUN servers", servers.LongLength);
+                } catch (FormatException) {
+                    return null;
+                }
+            }).Compact().ToList();
+            logger.LogDebug("Fetched {count:N0} STUN servers", servers.Count);
             return servers;
         } catch (HttpRequestException) {
             return await getFallbackStunServers();
