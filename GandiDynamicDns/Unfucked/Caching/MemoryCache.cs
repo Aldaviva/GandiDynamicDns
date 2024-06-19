@@ -34,6 +34,10 @@ public class MemoryCache<T>(string name = "", NameValueCollection? config = null
         return await GetOrAdd(key, valueCreator, new CacheItemPolicy { AbsoluteExpiration = DateTimeOffset.Now + evictAfterCreation });
     }
 
+    public void Clear() {
+        Trim(100);
+    }
+
     #endregion
 
     #region Delegated

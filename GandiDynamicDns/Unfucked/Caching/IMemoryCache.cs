@@ -48,6 +48,11 @@ public interface IMemoryCache<T>: IDisposable where T: notnull {
     /// <returns>The old cached value if it already existed, or the new value returned and cached from <paramref name="valueCreator"/> otherwise</returns>
     Task<T> GetOrAdd(string key, Func<Task<T>> valueCreator, TimeSpan evictAfterCreation);
 
+    /// <summary>
+    /// Remove all entries from the cache
+    /// </summary>
+    void Clear();
+
     #endregion
 
     #region Delegated

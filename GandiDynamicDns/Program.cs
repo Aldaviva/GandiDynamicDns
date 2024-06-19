@@ -1,7 +1,7 @@
-﻿using G6.GandiLiveDns;
-using GandiDynamicDns;
+﻿using GandiDynamicDns;
 using GandiDynamicDns.Net.Dns;
 using GandiDynamicDns.Net.Stun;
+using GandiDynamicDns.Unfucked.Dns;
 using GandiDynamicDns.Unfucked.Stun;
 using GandiDynamicDns.Util;
 using Microsoft.Extensions.Options;
@@ -20,7 +20,7 @@ appConfig.Services
     .AddLogging()
     .AddInjectableProviders()
     .AddSystemd()
-    .AddWindowsService(options => options.ServiceName = "GandiDynamicDns")
+    .AddWindowsService(WindowsService.configure)
     .Configure<Configuration>(appConfig.Configuration)
     .PostConfigure<Configuration>(configuration => configuration.fix())
     .AddSingleton(_ => new HttpClient(new SocketsHttpHandler {
@@ -33,16 +33,17 @@ appConfig.Services
         }
     }))
     .AddHostedService<DynamicDnsServiceImpl>()
-    .AddSingleton(provider => {
+    .AddSingleton<IGandiLiveDns>(provider => {
         string apiKey = provider.GetRequiredService<IOptions<Configuration>>().Value.gandiApiKey;
         if (string.IsNullOrWhiteSpace(apiKey) || apiKey == "<Generate an API key on https://account.gandi.net/en/users/_/security>") {
             throw new ArgumentException($"Missing configuration option {nameof(Configuration.gandiApiKey)} in appsettings.json");
         }
-        return new GandiLiveDns { Apikey = apiKey };
+        return new GandiLiveDns { ApiKey = apiKey };
     })
     .AddSingleton<DnsManager, GandiDnsManager>()
     .AddTransient<IStunClient5389, MultiServerStunClient>()
-    .AddSingleton<SelfWanAddressClient, ThreadSafeMultiServerStunClient>();
+    .AddSingleton<SelfWanAddressClient, ThreadSafeMultiServerStunClient>()
+    .AddSingleton<StunClientFactory, StunClient5389Factory>();
 
 using IHost app = appConfig.Build();
 await app.RunAsync();

@@ -12,14 +12,15 @@ public interface DynamicDnsService: IDisposable {
 
 }
 
-public class DynamicDnsServiceImpl(DnsManager dns, SelfWanAddressClient stun, IOptions<Configuration> configuration, ILogger<DynamicDnsServiceImpl> logger): BackgroundService, DynamicDnsService {
+public class DynamicDnsServiceImpl(DnsManager dns, SelfWanAddressClient stun, IOptions<Configuration> configuration, ILogger<DynamicDnsServiceImpl> logger, IHostApplicationLifetime lifetime)
+    : BackgroundService, DynamicDnsService {
 
     private const string DNS_A_RECORD = "A";
 
     public IPAddress? selfWanAddress { get; private set; }
 
     protected override async Task ExecuteAsync(CancellationToken ct) {
-        if ((await dns.fetchDnsRecords(configuration.Value.domain, configuration.Value.subdomain, DnsRecordType.A, ct)).FirstOrDefault() is { } existingIpAddress) {
+        if ((await dns.fetchDnsRecords(configuration.Value.subdomain, configuration.Value.domain, DnsRecordType.A, ct)).FirstOrDefault() is { } existingIpAddress) {
             try {
                 selfWanAddress = IPAddress.Parse(existingIpAddress);
             } catch (FormatException) { }
@@ -28,7 +29,13 @@ public class DynamicDnsServiceImpl(DnsManager dns, SelfWanAddressClient stun, IO
 
         while (!ct.IsCancellationRequested) {
             await updateDnsRecordIfNecessary(ct);
-            await Task2.Delay(configuration.Value.updateInterval, ct);
+
+            if (configuration.Value.updateInterval > TimeSpan.Zero) {
+                await Task2.Delay(configuration.Value.updateInterval, ct);
+            } else {
+                lifetime.StopApplication();
+                break;
+            }
         }
     }
 
@@ -47,7 +54,7 @@ public class DynamicDnsServiceImpl(DnsManager dns, SelfWanAddressClient stun, IO
     }
 
     private async Task updateDnsRecord(IPAddress currentIPAddress, CancellationToken ct = default) {
-        await dns.setDnsRecord(configuration.Value.domain, configuration.Value.subdomain, DnsRecordType.A, configuration.Value.dnsRecordTimeToLive, [currentIPAddress.ToString()], ct);
+        await dns.setDnsRecord(configuration.Value.subdomain, configuration.Value.domain, DnsRecordType.A, configuration.Value.dnsRecordTimeToLive, [currentIPAddress.ToString()], ct);
     }
 
 }

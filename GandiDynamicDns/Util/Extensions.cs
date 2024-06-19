@@ -2,10 +2,11 @@
 using Microsoft.Extensions.Configuration.Json;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.FileProviders;
+using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Net.Sockets;
 
-namespace GandiDynamicDns;
+namespace GandiDynamicDns.Util;
 
 public static class Extensions {
 
@@ -16,6 +17,7 @@ public static class Extensions {
     /// <param name="builder"><see cref="HostApplicationBuilder.Configuration"/></param>
     /// <returns>the same <see cref="IConfigurationBuilder"/> for chaining</returns>
     // ExceptionAdjustment: M:System.Collections.Generic.IList`1.Insert(System.Int32,`0) -T:System.NotSupportedException
+    [ExcludeFromCodeCoverage]
     public static IConfigurationBuilder AlsoSearchForJsonFilesInExecutableDirectory(this IConfigurationBuilder builder) {
         string? installationDir;
         try {
@@ -50,17 +52,19 @@ public static class Extensions {
         return builder;
     }
 
+    [ExcludeFromCodeCoverage]
     public static IEnumerable<T> Compact<T>(this IEnumerable<T?> source) where T: class {
         return source.Where(item => item != null)!;
     }
 
+    [ExcludeFromCodeCoverage]
     public static IEnumerable<T> Compact<T>(this IEnumerable<T?> source) where T: struct {
         return source.Where(item => item != null).Cast<T>();
     }
 
     public static async Task<IPEndPoint?> Resolve(this DnsEndPoint host, CancellationToken ct = default) {
         try {
-            return await System.Net.Dns.GetHostAddressesAsync(host.Host, host.AddressFamily, ct) is [var firstAddress, ..] ? new IPEndPoint(firstAddress, host.Port) : null;
+            return await Dns.GetHostAddressesAsync(host.Host, host.AddressFamily, ct) is [var firstAddress, ..] ? new IPEndPoint(firstAddress, host.Port) : null;
         } catch (SocketException) {
             return null;
         }
