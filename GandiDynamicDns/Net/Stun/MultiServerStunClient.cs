@@ -86,7 +86,7 @@ public class MultiServerStunClient(HttpClient http, StunClientFactory stunClient
         foreach (IStunClient5389 stun in await getStunClients(cancellationToken)) {
             using (stun) {
                 Server = stun.Server;
-                logger.LogDebug("Sending STUN request to {host}", stun.Server.ToString());
+                logger.LogDebug("Sending UDP STUN request to {host}", stun.Server.ToString());
                 State = await stun.BindingTestAsync(cancellationToken);
                 if (isSuccessfulResponse(State)) {
                     break;

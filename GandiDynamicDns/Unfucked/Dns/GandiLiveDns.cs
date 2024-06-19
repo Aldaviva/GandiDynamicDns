@@ -10,7 +10,7 @@ namespace GandiDynamicDns.Unfucked.Dns;
 [GeneratedCode("G6.GandiLiveDns", "1.0.0")]
 public class GandiLiveDns: IGandiLiveDns {
 
-    #region Custom
+    #region New
 
     private readonly G6.GandiLiveDns.GandiLiveDns gandi;
 
@@ -19,31 +19,21 @@ public class GandiLiveDns: IGandiLiveDns {
     private GandiLiveDns(G6.GandiLiveDns.GandiLiveDns gandi, bool shouldDisposeHttpClient) {
         this.gandi                   = gandi;
         this.shouldDisposeHttpClient = shouldDisposeHttpClient;
-
-        // MethodInfo prepareRequestMethod = typeof(G6.GandiLiveDns.GandiLiveDns).GetMethod("PrepareRequest", BindingFlags.NonPublic, [typeof(HttpClient), typeof(HttpRequestMessage), typeof(string)])!;
-        // prepareRequestMethod.GetMethodBody().GetILAsByteArray()
     }
 
     public GandiLiveDns(): this(new G6.GandiLiveDns.GandiLiveDns(), true) { }
 
     public GandiLiveDns(string baseUrl, HttpClient httpClient): this(new G6.GandiLiveDns.GandiLiveDns(baseUrl, httpClient), false) { }
 
-    protected void PrepareRequest2(HttpClient client, HttpRequestMessage request, string url) { }
-
-    /*
-     * I added this myself, don't replace it when generating a new version of this file
-     */
     public void Dispose() {
         if (shouldDisposeHttpClient) {
-            HttpClient httpClient = (HttpClient) typeof(G6.GandiLiveDns.GandiLiveDns).GetFields(BindingFlags.NonPublic | BindingFlags.Instance).First(info => info.FieldType == typeof(HttpClient))
-                .GetValue(gandi)!;
-            httpClient.Dispose();
+            ((HttpClient) typeof(G6.GandiLiveDns.GandiLiveDns).GetFields(BindingFlags.NonPublic | BindingFlags.Instance).First(f => f.FieldType == typeof(HttpClient)).GetValue(gandi)!).Dispose();
         }
     }
 
     #endregion
 
-    #region Third-party
+    #region Delegated
 
     public string BaseUrl {
         [DebuggerStepThrough] get => gandi.BaseUrl;

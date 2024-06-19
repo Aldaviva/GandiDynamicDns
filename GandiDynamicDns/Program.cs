@@ -22,7 +22,6 @@ appConfig.Services
     .AddSystemd()
     .AddWindowsService(WindowsService.configure)
     .Configure<Configuration>(appConfig.Configuration)
-    .PostConfigure<Configuration>(configuration => configuration.fix())
     .AddSingleton(_ => new HttpClient(new SocketsHttpHandler {
         AllowAutoRedirect        = true,
         ConnectTimeout           = TimeSpan.FromSeconds(10),
