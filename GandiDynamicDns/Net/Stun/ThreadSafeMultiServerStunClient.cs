@@ -8,16 +8,18 @@ namespace GandiDynamicDns.Net.Stun;
 
 public interface SelfWanAddressClient {
 
-    Task<IPAddress?> getSelfWanAddress(CancellationToken ct = default);
+    Task<SelfWanAddressResponse> getSelfWanAddress(CancellationToken ct = default);
 
 }
 
+public record SelfWanAddressResponse(IPAddress? selfWanAddress, IPEndPoint server);
+
 public class ThreadSafeMultiServerStunClient(Provider<IStunClient5389> stunProvider): SelfWanAddressClient {
 
-    public async Task<IPAddress?> getSelfWanAddress(CancellationToken ct = default) {
+    public async Task<SelfWanAddressResponse> getSelfWanAddress(CancellationToken ct = default) {
         using IStunClient5389 stun     = stunProvider.get();
         StunResult5389        response = await stun.BindingTestAsync(ct);
-        return response.BindingTestResult == BindingTestResult.Success ? response.PublicEndPoint?.Address : null;
+        return new SelfWanAddressResponse(response.BindingTestResult == BindingTestResult.Success ? response.PublicEndPoint?.Address : null, stun.Server);
     }
 
 }

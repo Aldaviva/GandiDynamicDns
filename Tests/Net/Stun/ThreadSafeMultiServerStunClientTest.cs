@@ -25,8 +25,8 @@ public class ThreadSafeMultiServerStunClientTest {
             PublicEndPoint    = new IPEndPoint(IPAddress.Parse("192.0.2.1"), 12345)
         });
 
-        IPAddress? actual = await threadSafeStunClient.getSelfWanAddress();
-        actual.Should().Be(IPAddress.Parse("192.0.2.1"));
+        SelfWanAddressResponse actual = await threadSafeStunClient.getSelfWanAddress();
+        actual.selfWanAddress.Should().Be(IPAddress.Parse("192.0.2.1"));
     }
 
 }

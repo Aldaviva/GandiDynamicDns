@@ -30,7 +30,7 @@ public class DynamicDnsServiceTest {
     [Fact]
     public async Task updateRecord() {
         A.CallTo(() => dns.fetchDnsRecords(A<string>._, A<string>._, A<DnsRecordType>._, A<CancellationToken>._)).Returns(["192.0.2.1"]);
-        A.CallTo(() => stun.getSelfWanAddress(A<CancellationToken>._)).Returns(IPAddress.Parse("192.0.2.2"));
+        A.CallTo(() => stun.getSelfWanAddress(A<CancellationToken>._)).Returns(new SelfWanAddressResponse(IPAddress.Parse("192.0.2.2"), IPEndPoint.Parse("192.0.2.3")));
 
         await service.StartAsync(default);
         await service.ExecuteTask!;
@@ -45,7 +45,7 @@ public class DynamicDnsServiceTest {
     [Fact]
     public async Task invalidExistingRecord() {
         A.CallTo(() => dns.fetchDnsRecords(A<string>._, A<string>._, A<DnsRecordType>._, A<CancellationToken>._)).Returns(["hargle"]);
-        A.CallTo(() => stun.getSelfWanAddress(A<CancellationToken>._)).Returns(IPAddress.Parse("192.0.2.2"));
+        A.CallTo(() => stun.getSelfWanAddress(A<CancellationToken>._)).Returns(new SelfWanAddressResponse(IPAddress.Parse("192.0.2.2"), IPEndPoint.Parse("192.0.2.3")));
 
         await service.StartAsync(default);
         await service.ExecuteTask!;
@@ -60,7 +60,7 @@ public class DynamicDnsServiceTest {
     [Fact]
     public async Task unchanged() {
         A.CallTo(() => dns.fetchDnsRecords(A<string>._, A<string>._, A<DnsRecordType>._, A<CancellationToken>._)).Returns(["192.0.2.1"]);
-        A.CallTo(() => stun.getSelfWanAddress(A<CancellationToken>._)).Returns(IPAddress.Parse("192.0.2.1"));
+        A.CallTo(() => stun.getSelfWanAddress(A<CancellationToken>._)).Returns(new SelfWanAddressResponse(IPAddress.Parse("192.0.2.1"), IPEndPoint.Parse("192.0.2.3")));
 
         await service.StartAsync(default);
         await service.ExecuteTask!;
@@ -93,7 +93,7 @@ public class DynamicDnsServiceTest {
                     latch.Signal();
                 } catch (InvalidOperationException) { }
             })
-            .Returns(IPAddress.Parse("192.0.2.2"));
+            .Returns(new SelfWanAddressResponse(IPAddress.Parse("192.0.2.2"), IPEndPoint.Parse("192.0.2.3")));
 
         await service.StartAsync(cts.Token);
         latch.Wait(10_000);

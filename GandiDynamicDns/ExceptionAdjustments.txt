@@ -5,6 +5,7 @@
 # Usage: <memberId>[ <accessor>] (-/+)<exceptionTypeId>
 # See ECMA-334, 5th Ed. § D.4.2 "ID string format" for a description of the ID format.
 
+M:System.Diagnostics.EventLog.WriteEntry(System.String,System.Diagnostics.EventLogEntryType,System.Int32) -T:System.ComponentModel.Win32Exception
 M:System.Net.IPAddress.ToString -T:System.Net.Sockets.SocketException
 M:System.TimeSpan.FromDays(System.Double) -T:System.OverflowException
 M:System.TimeSpan.FromSeconds(System.Double) -T:System.OverflowException
