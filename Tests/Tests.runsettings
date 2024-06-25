@@ -9,7 +9,7 @@
 
                     <!-- Exclusion rules are not synchronized with dotCover, which are controlled by *.sln.DotSettings -->
                     <!-- Syntax: https://github.com/coverlet-coverage/coverlet/blob/master/Documentation/MSBuildIntegration.md#filters -->
-                    <Exclude>[Test*]*,[GandiDynamicDns]GandiDynamicDns.Unfucked.*</Exclude>
+                    <Exclude>[Test*]*,[StunDnsResolver]*,[GandiDynamicDns]GandiDynamicDns.Unfucked.*</Exclude>
                 </Configuration>
             </DataCollector>
         </DataCollectors>

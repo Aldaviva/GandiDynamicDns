@@ -39,16 +39,17 @@ This is an alternative to filling out monthly CAPTCHAs for [No-IP](https://www.n
         ```
 
 ## Configuration
-Open `appsettings.json` in a text editor.
+Open `appsettings.json` in a text editor and fill in the following values. Keys marked with ✴ are the most important ones to configure.
 
 |Key|Type|Examples|Description|
 |-|-|-|-|
-|`gandiApiKey`|`string`|`abcdefg`|Generate an API key under [Developer access](https://account.gandi.net/en/users/_/security) in your [Gandi Account](https://account.gandi.net/en). Personal Access Tokens are unfortunately not supported by [G6.GandiLiveDns](https://github.com/gaylord-roger/G6.GandiLiveDns).|
-|`domain`|`string`|`example.com`<br>`example.co.uk`|The second-level domain name that you registered, including the TLD.|
-|`subdomain`|`string`|`www`<br>`@`<br>`api.stage`|The subdomain whose DNS record you want to update, not including `domain` or a trailing period. To update `domain` itself, set this to `@`. Can also be a multi-level subdomain.|
-|`updateInterval`|`TimeSpan`|`0.00:05:00`|How frequently this program will check if your public IP address has changed and update DNS. Format is `d.hh:mm:ss`.<br>**One-shot mode:** if set to `0:0:0` or negative, this program will exit after the first update attempt, instead of remaining running and updating periodically; useful if you want to trigger it yourself, like with `cron`.|
-|`dnsRecordTimeToLive`|`TimeSpan`|`0.00:05:00`|How long DNS resolvers can cache your record before they must look it up again. Gandi requires this to be between 5 minutes and 30 days, inclusive.|
-|`dryRun`|`bool`|`false`<br>`true`|Set to `false` to run normally, or `true` to avoid changing any DNS records.|
+|`gandiApiKey` ✴|`string`|`abcdefg`|Generate an API key under [Developer access](https://account.gandi.net/en/users/_/security) in your [Gandi Account](https://account.gandi.net/en). Personal Access Tokens are unfortunately not supported by [G6.GandiLiveDns](https://github.com/gaylord-roger/G6.GandiLiveDns).|
+|`domain` ✴|`string`|`example.com`<br>`example.co.uk`|The second-level domain name that you registered, including the TLD.|
+|`subdomain` ✴|`string`|`www`<br>`@`<br>`api.stage`|The subdomain whose DNS record you want to update, not including `domain` or a trailing period. To update `domain` itself, set this to `@` (default). Can also be a multi-level subdomain.|
+|`updateInterval`|`TimeSpan`|`0.00:05:00`|How frequently this program will check if your public IP address has changed and update DNS. Format is `d.hh:mm:ss`. Defaults to 5 minutes.<br>**One-shot mode:** if set to `0:0:0` or negative, this program will exit after the first update attempt, instead of remaining running and updating periodically; useful if you want to trigger it yourself, like with `cron`.|
+|`dnsRecordTimeToLive`|`TimeSpan`|`0.00:05:00`|How long DNS resolvers can cache your record before they must look it up again. Gandi requires this to be between 5 minutes and 30 days, inclusive. Defaults to 5 minutes.|
+|`dryRun`|`bool`|`false`<br>`true`|Set to `false` (default) to run normally, or `true` to avoid changing any DNS records.|
+|`stunServerBlacklist`|`string[]`|`["stun.bergophor.de", "stun.usfamily.net"]`|List of STUN server hostnames to not use when determining your computer's public IP address. Defaults to blocking `stun.bergophor.de` and `stun.usfamily.net` due to incorrect responses.|
 
 ## Execution
 - **Manually**: `./GandiDynamicDns`

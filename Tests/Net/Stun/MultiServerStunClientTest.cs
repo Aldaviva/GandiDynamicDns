@@ -1,8 +1,9 @@
-﻿using GandiDynamicDns.Net.Stun;
+﻿using GandiDynamicDns;
+using GandiDynamicDns.Net.Stun;
 using GandiDynamicDns.Unfucked.Stun;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
 using STUN.Enums;
-using STUN.Proxy;
 using STUN.StunResult;
 using System.Net;
 using Tests.Mocks;
@@ -18,9 +19,15 @@ public class MultiServerStunClientTest: IDisposable {
 
     public MultiServerStunClientTest() {
         MultiServerStunClient.SERVERS_CACHE.Clear();
-        multiServerStunClient = new MultiServerStunClient(new HttpClient(httpMessageHandler), stunClientFactory, new NullLogger<MultiServerStunClient>());
+        multiServerStunClient = new MultiServerStunClient(new HttpClient(httpMessageHandler), stunClientFactory, new NullLogger<MultiServerStunClient>(), new OptionsWrapper<Configuration>(
+            new Configuration {
+                gandiApiKey = "",
+                domain      = "example.com"
+            }));
 
-        A.CallTo(() => stunClientFactory.createStunClient(A<IPEndPoint>._, A<IPEndPoint>._, A<IUdpProxy>._)).Returns(singleServerStunClient);
+        A.CallTo(() => stunClientFactory.createStunClient(A<DnsEndPoint>._)).Returns(singleServerStunClient);
+        A.CallTo(() => singleServerStunClient.Server).Returns(new DnsEndPoint("example.com", 3478));
+        A.CallTo(() => singleServerStunClient.ServerAddress).Returns(IPEndPoint.Parse("192.0.2.1:12345"));
 
         A.CallTo(() => httpMessageHandler.fakeSendAsync(A<HttpRequestMessage>._, A<CancellationToken>._))
             .Returns(new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("192.0.2.1:12345\n192.0.2.2:12345\n192.0.2.3:hargle\n") });
