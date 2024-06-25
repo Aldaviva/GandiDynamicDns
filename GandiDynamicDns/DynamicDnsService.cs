@@ -50,12 +50,11 @@ public class DynamicDnsServiceImpl(DnsManager dns, SelfWanAddressClient stun, IO
     private async Task updateDnsRecordIfNecessary(CancellationToken ct = default) {
         SelfWanAddressResponse stunResponse = await stun.getSelfWanAddress(ct);
         if (stunResponse.selfWanAddress != null && !stunResponse.selfWanAddress.Equals(selfWanAddress)) {
-            logger.LogInformation("IP address changed from {old} to {new} according to {server}, updating {fqdn} DNS A record", selfWanAddress, stunResponse.selfWanAddress,
-                stunResponse.server.Address,
-                configuration.Value.fqdn);
+            logger.LogInformation("This computer's public IP address changed from {old} to {new} according to {server} ({serverAddr}), updating {fqdn} A record in DNS server", selfWanAddress,
+                stunResponse.selfWanAddress, stunResponse.server.Host, stunResponse.serverAddress.ToString(), configuration.Value.fqdn);
 #if WINDOWS
             eventLog?.WriteEntry(
-                $"IP address changed from {selfWanAddress} to {stunResponse.selfWanAddress} according to {stunResponse.server.Address}, updating {configuration.Value.fqdn} DNS A record",
+                $"This computer's public IP address changed from {selfWanAddress} to {stunResponse.selfWanAddress}, according to {stunResponse.server.Host} ({stunResponse.serverAddress}), updating {configuration.Value.fqdn} A record in DNS server",
                 EventLogEntryType.Information, 1);
 #endif
 

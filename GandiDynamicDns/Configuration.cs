@@ -16,6 +16,7 @@ public record Configuration {
     public TimeSpan updateInterval { get; init; } = GandiDnsManager.MINIMUM_TIME_TO_LIVE;
     public TimeSpan dnsRecordTimeToLive { get; init; } = GandiDnsManager.MINIMUM_TIME_TO_LIVE;
     public bool dryRun { get; init; }
+    public IList<string> stunServerBlacklist { get; } = [];
 
     public string subdomain {
         get => _subdomain;

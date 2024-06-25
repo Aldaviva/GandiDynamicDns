@@ -12,14 +12,14 @@ public interface SelfWanAddressClient {
 
 }
 
-public record SelfWanAddressResponse(IPAddress? selfWanAddress, IPEndPoint server);
+public record SelfWanAddressResponse(IPAddress? selfWanAddress, DnsEndPoint server, IPEndPoint serverAddress);
 
 public class ThreadSafeMultiServerStunClient(Provider<IStunClient5389> stunProvider): SelfWanAddressClient {
 
     public async Task<SelfWanAddressResponse> getSelfWanAddress(CancellationToken ct = default) {
         using IStunClient5389 stun     = stunProvider.get();
         StunResult5389        response = await stun.BindingTestAsync(ct);
-        return new SelfWanAddressResponse(response.BindingTestResult == BindingTestResult.Success ? response.PublicEndPoint?.Address : null, stun.Server);
+        return new SelfWanAddressResponse(response.BindingTestResult == BindingTestResult.Success ? response.PublicEndPoint?.Address : null, stun.Server, stun.ServerAddress);
     }
 
 }
