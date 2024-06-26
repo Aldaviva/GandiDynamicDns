@@ -11,7 +11,8 @@ public record Configuration {
 
     private readonly string _subdomain = DOMAIN_ROOT;
 
-    public required string gandiApiKey { get; init; }
+    public string? gandiApiKey { get; init; }
+    public string? gandiPersonalAccessToken { get; init; }
     public required string domain { get; init; }
     public TimeSpan updateInterval { get; init; } = GandiDnsManager.MINIMUM_TIME_TO_LIVE;
     public TimeSpan dnsRecordTimeToLive { get; init; } = GandiDnsManager.MINIMUM_TIME_TO_LIVE;

@@ -1,7 +1,7 @@
 ﻿using G6.GandiLiveDns;
+using GandiDynamicDns.Unfucked.Http;
 using System.CodeDom.Compiler;
 using System.Diagnostics;
-using System.Reflection;
 
 // ReSharper disable InconsistentNaming - these names must match a third-party library
 
@@ -12,23 +12,24 @@ public class GandiLiveDns: IGandiLiveDns {
 
     #region New
 
+    private const string DEFAULT_BASE_URL = "https://api.gandi.net/v5/livedns";
+
+    private readonly HttpClient                   httpClient;
     private readonly G6.GandiLiveDns.GandiLiveDns gandi;
 
-    private readonly bool shouldDisposeHttpClient;
+    public GandiLiveDns(): this(new FilteringHttpClientHandler()) { }
 
-    private GandiLiveDns(G6.GandiLiveDns.GandiLiveDns gandi, bool shouldDisposeHttpClient) {
-        this.gandi                   = gandi;
-        this.shouldDisposeHttpClient = shouldDisposeHttpClient;
+    public GandiLiveDns(FilteringHttpClientHandler httpClientHandler) {
+        httpClient = new HttpClient(httpClientHandler, true);
+        gandi      = new G6.GandiLiveDns.GandiLiveDns(DEFAULT_BASE_URL, httpClient);
+
+        httpClientHandler.requestFilters.Add(new GandiPersonalAccessTokenAuthenticationFilter(_ => ValueTask.FromResult(PersonalAccessToken)));
     }
 
-    public GandiLiveDns(): this(new G6.GandiLiveDns.GandiLiveDns(), true) { }
-
-    public GandiLiveDns(string baseUrl, HttpClient httpClient): this(new G6.GandiLiveDns.GandiLiveDns(baseUrl, httpClient), false) { }
+    public string? PersonalAccessToken { get; set; } = null;
 
     public void Dispose() {
-        if (shouldDisposeHttpClient) {
-            ((HttpClient) typeof(G6.GandiLiveDns.GandiLiveDns).GetFields(BindingFlags.NonPublic | BindingFlags.Instance).First(f => f.FieldType == typeof(HttpClient)).GetValue(gandi)!).Dispose();
-        }
+        httpClient.Dispose();
     }
 
     #endregion

@@ -2,6 +2,7 @@
 using GandiDynamicDns.Net.Dns;
 using GandiDynamicDns.Net.Stun;
 using GandiDynamicDns.Unfucked.Dns;
+using GandiDynamicDns.Unfucked.Http;
 using GandiDynamicDns.Unfucked.Stun;
 using GandiDynamicDns.Util;
 using Microsoft.Extensions.Options;
@@ -22,7 +23,7 @@ appConfig.Services
     .AddSystemd()
     .AddWindowsService(WindowsService.configure)
     .Configure<Configuration>(appConfig.Configuration)
-    .AddSingleton(_ => new HttpClient(new SocketsHttpHandler {
+    .AddSingleton<HttpMessageHandler>(_ => new SocketsHttpHandler {
         AllowAutoRedirect        = true,
         ConnectTimeout           = TimeSpan.FromSeconds(10),
         PooledConnectionLifetime = TimeSpan.FromMinutes(15),
@@ -30,14 +31,23 @@ appConfig.Services
         SslOptions = new SslClientAuthenticationOptions {
             EnabledSslProtocols = SslProtocols.Tls12 | SslProtocols.Tls13
         }
-    }))
+    })
+    .AddSingleton(provider => new HttpClient(provider.GetRequiredService<HttpMessageHandler>()))
     .AddHostedService<DynamicDnsServiceImpl>()
-    .AddSingleton<IGandiLiveDns>(provider => {
-        string apiKey = provider.GetRequiredService<IOptions<Configuration>>().Value.gandiApiKey;
-        if (string.IsNullOrWhiteSpace(apiKey) || apiKey == "<Generate an API key on https://account.gandi.net/en/users/_/security>") {
-            throw new ArgumentException($"Missing configuration option {nameof(Configuration.gandiApiKey)} in appsettings.json");
+    .AddSingleton(provider => {
+        IGandiLiveDns gandi               = new GandiLiveDns(new FilteringHttpClientHandler(provider.GetRequiredService<HttpMessageHandler>()));
+        Configuration configuration       = provider.GetRequiredService<IOptions<Configuration>>().Value;
+        string?       apiKey              = configuration.gandiApiKey;
+        string?       personalAccessToken = configuration.gandiPersonalAccessToken;
+        if (!string.IsNullOrWhiteSpace(apiKey) && !apiKey.StartsWith('<')) {
+            gandi.ApiKey = apiKey;
+        } else if (!string.IsNullOrWhiteSpace(personalAccessToken) && !personalAccessToken.StartsWith('<')) {
+            gandi.PersonalAccessToken = personalAccessToken;
+        } else {
+            throw new ArgumentException($"One of {nameof(Configuration.gandiPersonalAccessToken)} or {nameof(Configuration.gandiApiKey)} is required in appsettings.json, but both were missing.");
         }
-        return new GandiLiveDns { ApiKey = apiKey };
+
+        return gandi;
     })
     .AddSingleton<DnsManager, GandiDnsManager>()
     .AddTransient<IStunClient5389, MultiServerStunClient>()

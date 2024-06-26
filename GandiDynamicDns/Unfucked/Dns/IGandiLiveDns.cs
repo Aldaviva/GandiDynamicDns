@@ -27,6 +27,17 @@ public interface IGandiLiveDns: IDisposable {
     string ApiKey { get; set; }
 
     /// <summary>
+    /// <para>The personal access token is a configured token from the Gandi Admin application, where scoped permissions and resources has been previously defined at it creation.</para>
+    /// <para>To consume an access token, the <c>Bearer</c> scheme has to be set in the <c>Authorization</c> header.</para>
+    /// <para>Here is a dummy example with an access token <c>abc</c> to get a complete header:</para>
+    /// <para><code>Authorization: Bearer abc</code></para>
+    /// <para>Note that Personal Access Token are restricted on resources and, a token cannot be shared across multiple organizations. Tokens are created in the Account Settings of the Gandi Admin application (<see href="https://admin.gandi.net/organizations/account/pat"/>), then click on "Create a token" button. Note that the organization is chosen and then a form will let you do a fine grained scope for the token.</para>
+    /// <para>For security reason, tokens expire and a rolling strategy must be considered to properly consume the Gandi API using Personal Access Token. At the moment, there is no renew mechanism for Personal Access Tokens, the tokens must be recreated using the Organization Admin application (<see href="https://admin.gandi.net/organizations/account/pat"/>).</para>
+    /// <para>Finally, for the sandbox usage (<see href="https://api.sandbox.gandi.net/docs/sandbox/"/>), the token has to be created in the Gandi Sandbox Admin (<see href="https://admin.sandbox.gandi.net/organizations/account/pat" />).</para>
+    /// </summary>
+    string? PersonalAccessToken { get; set; }
+
+    /// <summary>
     /// <para>Documentation: <see href="https://api.gandi.net/docs/livedns/#get-v5-livedns-domains-fqdn-records" /></para>
     /// <para>List records associated with a domain</para>
     /// </summary>
