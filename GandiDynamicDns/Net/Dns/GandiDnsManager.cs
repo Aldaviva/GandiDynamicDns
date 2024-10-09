@@ -1,4 +1,4 @@
-﻿using GandiDynamicDns.Unfucked.Dns;
+﻿using Unfucked.DNS;
 
 namespace GandiDynamicDns.Net.Dns;
 
@@ -12,8 +12,15 @@ public interface DnsManager {
 
 public class GandiDnsManager(IGandiLiveDns gandi): DnsManager {
 
-    public static readonly  TimeSpan MINIMUM_TIME_TO_LIVE = TimeSpan.FromSeconds(300);       // 5 minutes
-    private static readonly TimeSpan MAXIMUM_TIME_TO_LIVE = TimeSpan.FromSeconds(2_592_000); // 30 days
+    /// <summary>
+    /// 5 minutes
+    /// </summary>
+    public static readonly TimeSpan MINIMUM_TIME_TO_LIVE = TimeSpan.FromSeconds(300);
+
+    /// <summary>
+    /// 30 days
+    /// </summary>
+    private static readonly TimeSpan MAXIMUM_TIME_TO_LIVE = TimeSpan.FromSeconds(2_592_000);
 
     public async Task<IEnumerable<string>> fetchDnsRecords(string subdomain, string domain, DnsRecordType type = DnsRecordType.A, CancellationToken ct = default) =>
         from record in await gandi.GetDomainRecords(domain, ct)

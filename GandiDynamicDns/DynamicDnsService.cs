@@ -1,9 +1,9 @@
 ﻿using GandiDynamicDns.Net.Dns;
-using GandiDynamicDns.Net.Stun;
-using GandiDynamicDns.Unfucked.Tasks;
 using Microsoft.Extensions.Options;
 using System.Diagnostics;
 using System.Net;
+using Unfucked;
+using Unfucked.STUN;
 
 namespace GandiDynamicDns;
 
@@ -13,7 +13,7 @@ public interface DynamicDnsService: IDisposable {
 
 }
 
-public class DynamicDnsServiceImpl(DnsManager dns, SelfWanAddressClient stun, IOptions<Configuration> configuration, ILogger<DynamicDnsServiceImpl> logger, IHostApplicationLifetime lifetime)
+public class DynamicDnsServiceImpl(DnsManager dns, ISelfWanAddressClient stun, IOptions<Configuration> configuration, ILogger<DynamicDnsServiceImpl> logger, IHostApplicationLifetime lifetime)
     : BackgroundService, DynamicDnsService {
 
     private const string DNS_A_RECORD = "A";
@@ -39,7 +39,7 @@ public class DynamicDnsServiceImpl(DnsManager dns, SelfWanAddressClient stun, IO
             await updateDnsRecordIfNecessary(ct);
 
             if (configuration.Value.updateInterval > TimeSpan.Zero) {
-                await Task2.Delay(configuration.Value.updateInterval, ct);
+                await Tasks.Delay(configuration.Value.updateInterval, ct);
             } else {
                 lifetime.StopApplication();
                 break;
@@ -48,18 +48,18 @@ public class DynamicDnsServiceImpl(DnsManager dns, SelfWanAddressClient stun, IO
     }
 
     private async Task updateDnsRecordIfNecessary(CancellationToken ct = default) {
-        SelfWanAddressResponse stunResponse = await stun.getSelfWanAddress(ct);
-        if (stunResponse.selfWanAddress != null && !stunResponse.selfWanAddress.Equals(selfWanAddress)) {
+        SelfWanAddressResponse stunResponse = await stun.GetSelfWanAddress(ct);
+        if (stunResponse.SelfWanAddress != null && !stunResponse.SelfWanAddress.Equals(selfWanAddress)) {
             logger.LogInformation("This computer's public IP address changed from {old} to {new} according to {server} ({serverAddr}), updating {fqdn} A record in DNS server", selfWanAddress,
-                stunResponse.selfWanAddress, stunResponse.server.Host, stunResponse.serverAddress.ToString(), configuration.Value.fqdn);
+                stunResponse.SelfWanAddress, stunResponse.Server.Host, stunResponse.ServerAddress.ToString(), configuration.Value.fqdn);
 #if WINDOWS
             eventLog?.WriteEntry(
-                $"This computer's public IP address changed from {selfWanAddress} to {stunResponse.selfWanAddress}, according to {stunResponse.server.Host} ({stunResponse.serverAddress}), updating {configuration.Value.fqdn} A record in DNS server",
+                $"This computer's public IP address changed from {selfWanAddress} to {stunResponse.SelfWanAddress}, according to {stunResponse.Server.Host} ({stunResponse.ServerAddress}), updating {configuration.Value.fqdn} A record in DNS server",
                 EventLogEntryType.Information, 1);
 #endif
 
-            selfWanAddress = stunResponse.selfWanAddress;
-            await updateDnsRecord(stunResponse.selfWanAddress, ct);
+            selfWanAddress = stunResponse.SelfWanAddress;
+            await updateDnsRecord(stunResponse.SelfWanAddress, ct);
         } else {
             logger.LogDebug("Not updating DNS {type} record for {fqdn} because it is already set to {value}", DNS_A_RECORD, configuration.Value.fqdn, selfWanAddress);
         }

@@ -43,7 +43,7 @@ Open `appsettings.json` in a text editor and fill in the following values. Keys 
 
 |Key|Type|Examples|Description|
 |-|-|-|-|
-|`gandiApiKey` ✴|`string`|`abcdefg`|Generate an API key under [Developer access](https://account.gandi.net/en/users/_/security) in your [Gandi Account](https://account.gandi.net/en). Personal Access Tokens are unfortunately not supported by [G6.GandiLiveDns](https://github.com/gaylord-roger/G6.GandiLiveDns).|
+|`gandiApiKey` ✴|`string`|`abcdefg`|Generate an API key under [Developer access](https://account.gandi.net/en/users/_/security) in your [Gandi Account](https://account.gandi.net/en). Does not accept Personal Access Tokens because they expire after a finite duration and can't be refreshed, and they're incompatible with the underlying third-party API client anyway.|
 |`domain` ✴|`string`|`example.com`<br>`example.co.uk`|The second-level domain name that you registered, including the TLD.|
 |`subdomain` ✴|`string`|`www`<br>`@`<br>`api.stage`|The subdomain whose DNS record you want to update, not including `domain` or a trailing period. To update `domain` itself, set this to `@` (default). Can also be a multi-level subdomain.|
 |`updateInterval`|`TimeSpan`|`0.00:05:00`|How frequently this program will check if your public IP address has changed and update DNS. Format is `d.hh:mm:ss`. Defaults to 5 minutes.<br>**One-shot mode:** if set to `0:0:0` or negative, this program will exit after the first update attempt, instead of remaining running and updating periodically; useful if you want to trigger it yourself, like with `cron`.|
