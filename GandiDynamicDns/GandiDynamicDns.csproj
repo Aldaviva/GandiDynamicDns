@@ -29,7 +29,7 @@
     <ItemGroup>
         <PackageReference Include="G6.GandiLiveDns" Version="1.0.0" />
         <PackageReference Include="JetBrains.Annotations" Version="2024.3.0" />
-        <PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="9.0.0" />
+        <PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="9.0.1" />
         <PackageReference Include="Microsoft.Extensions.Hosting.Systemd" Version="9.0.0" />
         <PackageReference Include="Stun.Net" Version="8.0.2" />
     </ItemGroup>
