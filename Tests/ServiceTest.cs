@@ -1,5 +1,4 @@
 ﻿using GandiDynamicDns;
-using GandiDynamicDns.Unfucked.Dns;
 using GandiDynamicDns.Util;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -7,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using System.Reflection;
+using Unfucked.DNS;
 
 namespace Tests;
 

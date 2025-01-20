@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Worker">
+<Project Sdk="Microsoft.NET.Sdk.Worker">
 
     <PropertyGroup>
         <OutputType>Exe</OutputType>
@@ -9,9 +9,9 @@
         <RollForward>latestMajor</RollForward>
         <LangVersion>latest</LangVersion>
         <NoWarn>$(NoWarn);8524;VSTHRD200</NoWarn>
-        <Version>0.2.1</Version>
+        <Version>0.3.0</Version>
         <Authors>Ben Hutchison</Authors>
-        <Copyright>© 2024 $(Authors)</Copyright>
+        <Copyright>© 2025 $(Authors)</Copyright>
         <Company>$(Authors)</Company>
         <AssemblyTitle>Gandi Dynamic DNS</AssemblyTitle>
         <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
@@ -29,21 +29,22 @@
     <ItemGroup>
         <PackageReference Include="G6.GandiLiveDns" Version="1.0.0" />
         <PackageReference Include="JetBrains.Annotations" Version="2024.3.0" />
-        <PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="9.0.0" />
-        <PackageReference Include="Microsoft.Extensions.Hosting.Systemd" Version="9.0.0" />
+        <PackageReference Include="Microsoft.Extensions.Hosting.Systemd" Version="9.0.1" />
+        <PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="9.0.1" />
         <PackageReference Include="Stun.Net" Version="8.0.2" />
+        <PackageReference Include="Unfucked" Version="0.0.0-beta4" />
+        <PackageReference Include="Unfucked.Caching" Version="0.0.0-beta3" />
+        <PackageReference Include="Unfucked.DI" Version="0.0.0-beta4" />
+        <PackageReference Include="Unfucked.DNS" Version="0.0.0-beta2" />
+        <PackageReference Include="Unfucked.STUN" Version="0.0.0-beta3" />
     </ItemGroup>
 
     <ItemGroup Condition="$(RuntimeIdentifier.StartsWith('win'))">
-        <None Update="Install service.ps1">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </None>
+        <None Update="Install service.ps1" CopyToOutputDirectory="PreserveNewest" />
     </ItemGroup>
 
     <ItemGroup Condition="$(RuntimeIdentifier.StartsWith('linux'))">
-        <None Update="gandidynamicdns.service">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </None>
+        <None Update="gandidynamicdns.service" CopyToOutputDirectory="PreserveNewest" />
     </ItemGroup>
 
     <PropertyGroup Condition="$(RuntimeIdentifier.StartsWith('linux'))">
@@ -55,21 +56,18 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Reference Include="Unfucked">
+        <!--<Reference Include="Unfucked">
             <HintPath>..\..\Unfucked\Unfucked\bin\Debug\net8.0\Unfucked.dll</HintPath>
         </Reference>
         <Reference Include="Unfucked.Caching">
             <HintPath>..\..\Unfucked\Caching\bin\Debug\netstandard2.0\Unfucked.Caching.dll</HintPath>
-        </Reference>
-        <Reference Include="Unfucked.DI">
+        </Reference>-->
+        <!--<Reference Include="Unfucked.DI">
             <HintPath>..\..\Unfucked\DI\bin\Debug\net6.0\Unfucked.DI.dll</HintPath>
-        </Reference>
-        <Reference Include="Unfucked.DNS">
-            <HintPath>..\..\Unfucked\DNS\bin\Debug\net6.0\Unfucked.DNS.dll</HintPath>
-        </Reference>
-        <Reference Include="Unfucked.STUN">
+        </Reference>-->
+        <!--<Reference Include="Unfucked.STUN">
             <HintPath>..\..\Unfucked\STUN\bin\Debug\net8.0\Unfucked.STUN.dll</HintPath>
-        </Reference>
+        </Reference>-->
     </ItemGroup>
 
 </Project>

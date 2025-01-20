@@ -43,13 +43,14 @@ Open `appsettings.json` in a text editor and fill in the following values. Keys 
 
 |Key|Type|Examples|Description|
 |-|-|-|-|
-|`gandiApiKey` ✴|`string`|`abcdefg`|Generate an API key under [Developer access](https://account.gandi.net/en/users/_/security) in your [Gandi Account](https://account.gandi.net/en). Does not accept Personal Access Tokens because they expire after a finite duration and can't be refreshed, and they're incompatible with the underlying third-party API client anyway.|
+|`gandiApiKey` ✴|`string`|`abcdefg`|Generate an API key under [Developer access](https://account.gandi.net/en/users/_/security) in your [Gandi Account](https://account.gandi.net/en). Does not accept Personal Access Tokens because they expire after a short duration and can't be refreshed, rendering them useless for headless service scenarios, and they're incompatible with the underlying third-party API client anyway.|
 |`domain` ✴|`string`|`example.com`<br>`example.co.uk`|The second-level domain name that you registered, including the TLD.|
 |`subdomain` ✴|`string`|`www`<br>`@`<br>`api.stage`|The subdomain whose DNS record you want to update, not including `domain` or a trailing period. To update `domain` itself, set this to `@` (default). Can also be a multi-level subdomain.|
-|`updateInterval`|`TimeSpan`|`0.00:05:00`|How frequently this program will check if your public IP address has changed and update DNS. Format is `d.hh:mm:ss`. Defaults to 5 minutes.<br>**One-shot mode:** if set to `0:0:0` or negative, this program will exit after the first update attempt, instead of remaining running and updating periodically; useful if you want to trigger it yourself, like with `cron`.|
-|`dnsRecordTimeToLive`|`TimeSpan`|`0.00:05:00`|How long DNS resolvers can cache your record before they must look it up again. Gandi requires this to be between 5 minutes and 30 days, inclusive. Defaults to 5 minutes.|
+|`updateInterval`|`TimeSpan`|`0.00:05:00`|How frequently this program will check if your public IP address has changed and update DNS. Format is `d.hh:mm:ss`. Defaults to 5 minutes.<br>**One-shot mode:** if set to `0:0:0` or negative, this program will exit after the first update attempt, instead of remaining running and updating periodically; useful for custom triggers, like `cron` or systemd timers.|
+|`dnsRecordTimeToLive`|`TimeSpan`|`0.00:05:00`|How long DNS resolvers can cache your record before they must look it up again. Format is `d.hh:mm:ss`. Gandi requires this to be between 5 minutes and 30 days, inclusive. Defaults to 5 minutes.|
 |`dryRun`|`bool`|`false`<br>`true`|Set to `false` (default) to run normally, or `true` to avoid changing any DNS records.|
-|`stunServerBlacklist`|`string[]`|`["stun.bergophor.de", "stun.usfamily.net"]`|List of STUN server hostnames to not use when determining your computer's public IP address. Defaults to blocking `stun.bergophor.de` and `stun.usfamily.net` due to incorrect responses.|
+|`unanimity`|`uint32`|`1`<br>`5`|This many STUN servers must all agree on a new IP address in order to change the DNS record, otherwise it will be left unchanged. Defaults to `1` to only send a single request and use any valid public address, without confirming with other servers.|
+|`stunServerBlacklist`|`string[]`|`["stun.bergophor.de", "stun.usfamily.net", "stun.finsterwalder.com"]`|List of STUN server hostnames to not use when determining your computer's public IP address. Defaults to blocking servers known to return incorrect responses.|
 
 ## Execution
 - **Manually**: `./GandiDynamicDns`

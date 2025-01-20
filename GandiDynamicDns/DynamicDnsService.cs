@@ -1,4 +1,5 @@
-﻿using GandiDynamicDns.Net.Dns;
+﻿using G6.GandiLiveDns;
+using GandiDynamicDns.Net.Dns;
 using Microsoft.Extensions.Options;
 using System.Diagnostics;
 using System.Net;
@@ -15,8 +16,6 @@ public interface DynamicDnsService: IDisposable {
 
 public class DynamicDnsServiceImpl(DnsManager dns, ISelfWanAddressClient stun, IOptions<Configuration> configuration, ILogger<DynamicDnsServiceImpl> logger, IHostApplicationLifetime lifetime)
     : BackgroundService, DynamicDnsService {
-
-    private const string DNS_A_RECORD = "A";
 
     public IPAddress? selfWanAddress { get; private set; }
 
@@ -48,26 +47,53 @@ public class DynamicDnsServiceImpl(DnsManager dns, ISelfWanAddressClient stun, I
     }
 
     private async Task updateDnsRecordIfNecessary(CancellationToken ct = default) {
-        SelfWanAddressResponse stunResponse = await stun.GetSelfWanAddress(ct);
-        if (stunResponse.SelfWanAddress != null && !stunResponse.SelfWanAddress.Equals(selfWanAddress)) {
-            logger.LogInformation("This computer's public IP address changed from {old} to {new} according to {server} ({serverAddr}), updating {fqdn} A record in DNS server", selfWanAddress,
-                stunResponse.SelfWanAddress, stunResponse.Server.Host, stunResponse.ServerAddress.ToString(), configuration.Value.fqdn);
+        SelfWanAddressResponse originalResponse = await stun.GetSelfWanAddress(ct);
+        if (originalResponse.SelfWanAddress != null && !originalResponse.SelfWanAddress.Equals(selfWanAddress)) {
+            int unanimity = (int) Math.Max(1, configuration.Value.unanimity);
+            if (await getUnanimousAgreement(originalResponse, unanimity, ct)) {
+                logger.LogInformation(
+                    "This computer's public IP address changed from {old} to {new} according to {server} ({serverAddr}) and {extraServerCount:N0} other STUN servers, updating {fqdn} A record in DNS server",
+                    selfWanAddress, originalResponse.SelfWanAddress, originalResponse.Server.Host, originalResponse.ServerAddress.ToString(), unanimity - 1, configuration.Value.fqdn);
 #if WINDOWS
-            eventLog?.WriteEntry(
-                $"This computer's public IP address changed from {selfWanAddress} to {stunResponse.SelfWanAddress}, according to {stunResponse.Server.Host} ({stunResponse.ServerAddress}), updating {configuration.Value.fqdn} A record in DNS server",
-                EventLogEntryType.Information, 1);
+                eventLog?.WriteEntry(
+                    $"This computer's public IP address changed from {selfWanAddress} to {originalResponse.SelfWanAddress}, according to {originalResponse.Server.Host} ({originalResponse.ServerAddress}) and {unanimity - 1:N0} others, updating {configuration.Value.fqdn} A record in DNS server",
+                    EventLogEntryType.Information, 1);
 #endif
 
-            selfWanAddress = stunResponse.SelfWanAddress;
-            await updateDnsRecord(stunResponse.SelfWanAddress, ct);
+                selfWanAddress = originalResponse.SelfWanAddress;
+                await updateDnsRecord(originalResponse.SelfWanAddress, ct);
+            } else {
+                logger.LogWarning("Not updating DNS A record for {fqdn} because there was a disagreement among {serverCount:N0} STUN servers about our public IP address, leaving it set to {value}",
+                    configuration.Value.fqdn, unanimity, selfWanAddress);
+            }
         } else {
-            logger.LogDebug("Not updating DNS {type} record for {fqdn} because it is already set to {value}", DNS_A_RECORD, configuration.Value.fqdn, selfWanAddress);
+            logger.LogDebug("Not updating DNS A record for {fqdn} because it is already set to {value}", configuration.Value.fqdn, selfWanAddress);
         }
+    }
+
+    private async Task<bool> getUnanimousAgreement(SelfWanAddressResponse originalResponse, int unanimity = 1, CancellationToken ct = default) {
+        IList<SelfWanAddressResponse> extraResponses  = (await Task.WhenAll(Enumerable.Range(1, unanimity - 1).Select(_ => stun.GetSelfWanAddress(ct)))).ToList();
+        ISet<string>                  serverHostnames = extraResponses.Append(originalResponse).Select(response => response.Server.Host).ToHashSet();
+
+        while (serverHostnames.Count < unanimity) {
+            SelfWanAddressResponse distinctResponse = await stun.GetSelfWanAddress(ct);
+            extraResponses.Add(distinctResponse);
+            serverHostnames.Add(distinctResponse.Server.Host);
+        }
+
+        return extraResponses.All(extra => originalResponse.SelfWanAddress!.Equals(extra.SelfWanAddress));
     }
 
     private async Task updateDnsRecord(IPAddress currentIPAddress, CancellationToken ct = default) {
         if (!configuration.Value.dryRun) {
-            await dns.setDnsRecord(configuration.Value.subdomain, configuration.Value.domain, DnsRecordType.A, configuration.Value.dnsRecordTimeToLive, [currentIPAddress.ToString()], ct);
+            try {
+                await dns.setDnsRecord(configuration.Value.subdomain, configuration.Value.domain, DnsRecordType.A, configuration.Value.dnsRecordTimeToLive, [currentIPAddress.ToString()], ct);
+            } catch (ApiException e) {
+                logger.LogError(e, "Failed to update DNS record for {fqdn} to {newAddr} due to DNS API server error", configuration.Value.fqdn, currentIPAddress);
+            }
+        } else {
+            logger.LogInformation("Dry run mode, not updating {fqdn} to {newAddr}. To actually make DNS changes, change {dryRun} from true to false in appsettings.json.", configuration.Value.fqdn,
+                currentIPAddress, nameof(Configuration.dryRun));
         }
     }
 

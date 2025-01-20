@@ -1,6 +1,6 @@
 ﻿using G6.GandiLiveDns;
 using GandiDynamicDns.Net.Dns;
-using GandiDynamicDns.Unfucked.Dns;
+using Unfucked.DNS;
 
 namespace Tests.Net.Dns;
 
@@ -21,7 +21,7 @@ public class GandiDnsManagerTest {
 
         IEnumerable<string> actual = await manager.fetchDnsRecords("www", "example.com");
 
-        actual.Should().Equal(["192.0.2.1"]);
+        actual.Should().Equal("192.0.2.1");
     }
 
     [Fact]
