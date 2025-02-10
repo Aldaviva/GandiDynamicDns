@@ -36,9 +36,9 @@
       },
       "Microsoft.NET.ILLink.Tasks": {
         "type": "Direct",
-        "requested": "[8.0.12, )",
-        "resolved": "8.0.12",
-        "contentHash": "FV4HnQ3JI15PHnJ5PGTbz+rYvrih42oLi/7UMIshNwCwUZhTq13UzrggtXk4ygrcMcN+4jsS6hhshx2p/Zd0ig=="
+        "requested": "[8.0.11, )",
+        "resolved": "8.0.11",
+        "contentHash": "zk5lnZrYJgtuJG8L4v17Ej8rZ3PUcR2iweNV08BaO5LbYHIi2wNaVNcJoLxvqgQdnjLlKnCCfVGLDr6QHeAarQ=="
       },
       "Stun.Net": {
         "type": "Direct",
@@ -53,13 +53,13 @@
         "type": "Direct",
         "requested": "[0.0.0-beta4, )",
         "resolved": "0.0.0-beta4",
-        "contentHash": "MZRmUAidr34/7ixnV2tl/ZSULI2Efjl2UJjtgugvA/tffGGYVgDkUY9wPE45KBfLtevL9QtwZ0HUgGGaAIUqKQ=="
+        "contentHash": "pWwHZP9Ok/LAZqFSrZ9CNddcWhx92wFxDh8oUgSrsNZjv/lFbM3HPSdcmLeqj4hhv1eir5a/DcQk+5XPSHzyvQ=="
       },
       "Unfucked.Caching": {
         "type": "Direct",
         "requested": "[0.0.0-beta3, )",
         "resolved": "0.0.0-beta3",
-        "contentHash": "bEoFAhTz88l/B9DOqCgyr5vrbYn9gjpz8Wi4bu/UlNmXRbCX84TdsPhb1G11Rc7DcMI7cHkH5ycWVCl1CA61Lg=="
+        "contentHash": "a34MORtDyTH1gAJjCftdfv3FmxYs8XGUozitPxPg+esy+ET9VQPipccYvdG7bPvVpmo8xsZLB7N6Q2/H5BvRGA=="
       },
       "Unfucked.DI": {
         "type": "Direct",
@@ -739,9 +739,9 @@
       },
       "Microsoft.NET.ILLink.Tasks": {
         "type": "Direct",
-        "requested": "[8.0.12, )",
-        "resolved": "8.0.12",
-        "contentHash": "FV4HnQ3JI15PHnJ5PGTbz+rYvrih42oLi/7UMIshNwCwUZhTq13UzrggtXk4ygrcMcN+4jsS6hhshx2p/Zd0ig=="
+        "requested": "[8.0.11, )",
+        "resolved": "8.0.11",
+        "contentHash": "zk5lnZrYJgtuJG8L4v17Ej8rZ3PUcR2iweNV08BaO5LbYHIi2wNaVNcJoLxvqgQdnjLlKnCCfVGLDr6QHeAarQ=="
       },
       "Stun.Net": {
         "type": "Direct",
@@ -756,13 +756,13 @@
         "type": "Direct",
         "requested": "[0.0.0-beta4, )",
         "resolved": "0.0.0-beta4",
-        "contentHash": "MZRmUAidr34/7ixnV2tl/ZSULI2Efjl2UJjtgugvA/tffGGYVgDkUY9wPE45KBfLtevL9QtwZ0HUgGGaAIUqKQ=="
+        "contentHash": "pWwHZP9Ok/LAZqFSrZ9CNddcWhx92wFxDh8oUgSrsNZjv/lFbM3HPSdcmLeqj4hhv1eir5a/DcQk+5XPSHzyvQ=="
       },
       "Unfucked.Caching": {
         "type": "Direct",
         "requested": "[0.0.0-beta3, )",
         "resolved": "0.0.0-beta3",
-        "contentHash": "bEoFAhTz88l/B9DOqCgyr5vrbYn9gjpz8Wi4bu/UlNmXRbCX84TdsPhb1G11Rc7DcMI7cHkH5ycWVCl1CA61Lg=="
+        "contentHash": "a34MORtDyTH1gAJjCftdfv3FmxYs8XGUozitPxPg+esy+ET9VQPipccYvdG7bPvVpmo8xsZLB7N6Q2/H5BvRGA=="
       },
       "Unfucked.DI": {
         "type": "Direct",
