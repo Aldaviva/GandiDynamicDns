@@ -8,6 +8,11 @@ using Unfucked;
 using Unfucked.DNS;
 using Unfucked.STUN;
 
+if (args.Intersect(["--version", "-v"], StringComparer.InvariantCulture).Any()) {
+    Console.WriteLine(typeof(Program).Assembly.GetName().Version!.ToString(3));
+    return;
+}
+
 HostApplicationBuilder appConfig = Host.CreateApplicationBuilder(args);
 
 appConfig.Logging.AddUnfuckedConsole();
