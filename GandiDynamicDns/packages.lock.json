@@ -49,6 +49,12 @@
           "Socks5": "1.0.2"
         }
       },
+      "ThrottleDebounce": {
+        "type": "Direct",
+        "requested": "[2.0.0, )",
+        "resolved": "2.0.0",
+        "contentHash": "/lt2PLUjE1bXCkPDVXXhZDzqaK3SmKwJ2EOq/a6ZbsgAWnRz3TqkqU0VyUncbh8bUIJQHCoPUxbwmjWeAbeIbw=="
+      },
       "Unfucked": {
         "type": "Direct",
         "requested": "[0.0.0-beta4, )",
@@ -751,6 +757,12 @@
         "dependencies": {
           "Socks5": "1.0.2"
         }
+      },
+      "ThrottleDebounce": {
+        "type": "Direct",
+        "requested": "[2.0.0, )",
+        "resolved": "2.0.0",
+        "contentHash": "/lt2PLUjE1bXCkPDVXXhZDzqaK3SmKwJ2EOq/a6ZbsgAWnRz3TqkqU0VyUncbh8bUIJQHCoPUxbwmjWeAbeIbw=="
       },
       "Unfucked": {
         "type": "Direct",

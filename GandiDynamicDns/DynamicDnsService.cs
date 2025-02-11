@@ -3,6 +3,7 @@ using GandiDynamicDns.Net.Dns;
 using Microsoft.Extensions.Options;
 using System.Diagnostics;
 using System.Net;
+using ThrottleDebounce;
 using Unfucked;
 using Unfucked.STUN;
 
@@ -27,11 +28,15 @@ public class DynamicDnsServiceImpl(DnsManager dns, ISelfWanAddressClient stun, I
 #endif
 
     protected override async Task ExecuteAsync(CancellationToken ct) {
-        if ((await dns.fetchDnsRecords(configuration.Value.subdomain, configuration.Value.domain, DnsRecordType.A, ct)).FirstOrDefault() is { } existingIpAddress) {
-            try {
-                selfWanAddress = IPAddress.Parse(existingIpAddress);
-            } catch (FormatException) { }
-        }
+        await Retrier.Attempt(async _ => {
+                if ((await dns.fetchDnsRecords(configuration.Value.subdomain, configuration.Value.domain, DnsRecordType.A, ct)).FirstOrDefault() is { } existingIpAddress) {
+                    try {
+                        selfWanAddress = IPAddress.Parse(existingIpAddress);
+                    } catch (FormatException) { }
+                }
+            }, maxAttempts: null, delay: _ => TimeSpan.FromSeconds(15), ex => ex is HttpRequestException or TaskCanceledException,
+            beforeRetry: () => logger.LogWarning("Failed to fetch existing DNS record from Gandi HTTP API server, retrying"), ct);
+
         logger.LogInformation("On startup, the {fqdn} DNS A record was pointing to {address}", configuration.Value.fqdn, selfWanAddress?.ToString() ?? "(nothing)");
 
         while (!ct.IsCancellationRequested) {
