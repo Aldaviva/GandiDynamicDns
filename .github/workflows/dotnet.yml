@@ -82,8 +82,8 @@ jobs:
       with:
         name: ${{ env.ProjectName }}-${{ matrix.TargetPlatform }}
         path: |
-          ${{ env.ProjectName }}/bin/Release/${{ matrix.TargetRuntime }}/${{ matrix.TargetPlatform }}/publish/${{ env.ProjectName }}.exe
-          ${{ env.ProjectName }}/bin/Release/${{ matrix.TargetRuntime }}/${{ matrix.TargetPlatform }}/publish/${{ env.ProjectName }}
+          ${{ env.ProjectName }}/bin/Release/${{ matrix.TargetRuntime }}/${{ matrix.TargetPlatform }}/publish/GandiDynamicDns.exe
+          ${{ env.ProjectName }}/bin/Release/${{ matrix.TargetRuntime }}/${{ matrix.TargetPlatform }}/publish/gandidynamicdns
           ${{ env.ProjectName }}/bin/Release/${{ matrix.TargetRuntime }}/${{ matrix.TargetPlatform }}/publish/appsettings.json
           ${{ env.ProjectName }}/bin/Release/${{ matrix.TargetRuntime }}/${{ matrix.TargetPlatform }}/publish/Install service.ps1
           ${{ env.ProjectName }}/bin/Release/${{ matrix.TargetRuntime }}/${{ matrix.TargetPlatform }}/publish/gandidynamicdns.service
