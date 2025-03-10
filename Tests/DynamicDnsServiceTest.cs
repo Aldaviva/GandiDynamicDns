@@ -6,8 +6,6 @@ using Microsoft.Extensions.Options;
 using System.Net;
 using Unfucked.STUN;
 
-// ReSharper disable RedundantExplicitParamsArrayCreation - implicit params IEnumerable breaks the build, idiot
-
 namespace Tests;
 
 public class DynamicDnsServiceTest {
@@ -32,7 +30,7 @@ public class DynamicDnsServiceTest {
 
     [Fact]
     public async Task updateRecord() {
-        A.CallTo(() => liveDns.Get(RecordType.A, A<string>._, A<CancellationToken>._)).Returns(new DnsRecord(RecordType.A, "www", TimeSpan.FromMinutes(5), "192.0.2.1"));
+        A.CallTo(() => liveDns.Get(RecordType.A, A<string>._, A<CancellationToken>._)).Returns(new DnsRecord(RecordType.A, "www", TimeSpan.FromMinutes(5), ["192.0.2.1"]));
         A.CallTo(() => stun.GetSelfWanAddress(A<CancellationToken>._))
             .Returns(new SelfWanAddressResponse(IPAddress.Parse("192.0.2.2"), new DnsEndPoint("example.com", 3478), IPEndPoint.Parse("192.0.2.3")));
 
@@ -47,7 +45,7 @@ public class DynamicDnsServiceTest {
 
     [Fact]
     public async Task invalidExistingRecord() {
-        A.CallTo(() => liveDns.Get(RecordType.A, A<string>._, A<CancellationToken>._)).Returns(new DnsRecord(RecordType.A, "www", TimeSpan.FromMinutes(5), "hargle"));
+        A.CallTo(() => liveDns.Get(RecordType.A, A<string>._, A<CancellationToken>._)).Returns(new DnsRecord(RecordType.A, "www", TimeSpan.FromMinutes(5), ["hargle"]));
         A.CallTo(() => stun.GetSelfWanAddress(A<CancellationToken>._))
             .Returns(new SelfWanAddressResponse(IPAddress.Parse("192.0.2.2"), new DnsEndPoint("example.com", 3478), IPEndPoint.Parse("192.0.2.3")));
 
@@ -77,7 +75,7 @@ public class DynamicDnsServiceTest {
 
     [Fact]
     public async Task unchanged() {
-        A.CallTo(() => liveDns.Get(RecordType.A, A<string>._, A<CancellationToken>._)).Returns(new DnsRecord(RecordType.A, "www", TimeSpan.FromMinutes(5), "192.0.2.1"));
+        A.CallTo(() => liveDns.Get(RecordType.A, A<string>._, A<CancellationToken>._)).Returns(new DnsRecord(RecordType.A, "www", TimeSpan.FromMinutes(5), ["192.0.2.1"]));
         A.CallTo(() => stun.GetSelfWanAddress(A<CancellationToken>._))
             .Returns(new SelfWanAddressResponse(IPAddress.Parse("192.0.2.1"), new DnsEndPoint("example.com", 3478), IPEndPoint.Parse("192.0.2.3")));
 
@@ -101,7 +99,7 @@ public class DynamicDnsServiceTest {
             dryRun              = true
         }), new NullLogger<DynamicDnsServiceImpl>(), lifetime);
 
-        A.CallTo(() => liveDns.Get(RecordType.A, A<string>._, A<CancellationToken>._)).Returns(new DnsRecord(RecordType.A, "www", TimeSpan.FromMinutes(5), "192.0.2.1"));
+        A.CallTo(() => liveDns.Get(RecordType.A, A<string>._, A<CancellationToken>._)).Returns(new DnsRecord(RecordType.A, "www", TimeSpan.FromMinutes(5), ["192.0.2.1"]));
         A.CallTo(() => stun.GetSelfWanAddress(A<CancellationToken>._))
             .Returns(new SelfWanAddressResponse(IPAddress.Parse("192.0.2.2"), new DnsEndPoint("example.com", 3478), IPEndPoint.Parse("192.0.2.3")));
 
@@ -128,7 +126,7 @@ public class DynamicDnsServiceTest {
 
         CountdownEvent latch = new(3);
 
-        A.CallTo(() => liveDns.Get(RecordType.A, A<string>._, A<CancellationToken>._)).Returns(new DnsRecord(RecordType.A, "www", TimeSpan.FromMinutes(5), "192.0.2.1"));
+        A.CallTo(() => liveDns.Get(RecordType.A, A<string>._, A<CancellationToken>._)).Returns(new DnsRecord(RecordType.A, "www", TimeSpan.FromMinutes(5), ["192.0.2.1"]));
         A.CallTo(() => stun.GetSelfWanAddress(A<CancellationToken>._))
             .Invokes(() => {
                 try {
@@ -166,7 +164,7 @@ public class DynamicDnsServiceTest {
             unanimity           = 3
         }), new NullLogger<DynamicDnsServiceImpl>(), lifetime);
 
-        A.CallTo(() => liveDns.Get(RecordType.A, A<string>._, A<CancellationToken>._)).Returns(new DnsRecord(RecordType.A, "www", TimeSpan.FromMinutes(5), "192.0.2.1"));
+        A.CallTo(() => liveDns.Get(RecordType.A, A<string>._, A<CancellationToken>._)).Returns(new DnsRecord(RecordType.A, "www", TimeSpan.FromMinutes(5), ["192.0.2.1"]));
         A.CallTo(() => stun.GetSelfWanAddress(A<CancellationToken>._)).ReturnsNextFromSequence(
             new SelfWanAddressResponse(IPAddress.Parse("192.0.2.2"), new DnsEndPoint("example.com", 3478), IPEndPoint.Parse("192.0.2.3")),
             new SelfWanAddressResponse(IPAddress.Parse("192.0.2.2"), new DnsEndPoint("example2.com", 3478), IPEndPoint.Parse("192.1.2.3")),
@@ -193,7 +191,7 @@ public class DynamicDnsServiceTest {
             unanimity           = 3
         }), new NullLogger<DynamicDnsServiceImpl>(), lifetime);
 
-        A.CallTo(() => liveDns.Get(RecordType.A, A<string>._, A<CancellationToken>._)).Returns(new DnsRecord(RecordType.A, "www", TimeSpan.FromMinutes(5), "192.0.2.1"));
+        A.CallTo(() => liveDns.Get(RecordType.A, A<string>._, A<CancellationToken>._)).Returns(new DnsRecord(RecordType.A, "www", TimeSpan.FromMinutes(5), ["192.0.2.1"]));
         A.CallTo(() => stun.GetSelfWanAddress(A<CancellationToken>._)).ReturnsNextFromSequence(
             new SelfWanAddressResponse(IPAddress.Parse("192.0.2.2"), new DnsEndPoint("example.com", 3478), IPEndPoint.Parse("192.0.2.3")),
             new SelfWanAddressResponse(IPAddress.Parse("192.0.2.2"), new DnsEndPoint("example2.com", 3478), IPEndPoint.Parse("192.1.2.3")),
@@ -220,7 +218,7 @@ public class DynamicDnsServiceTest {
             unanimity           = 3
         }), new NullLogger<DynamicDnsServiceImpl>(), lifetime);
 
-        A.CallTo(() => liveDns.Get(RecordType.A, A<string>._, A<CancellationToken>._)).Returns(new DnsRecord(RecordType.A, "www", TimeSpan.FromMinutes(5), "192.0.2.1"));
+        A.CallTo(() => liveDns.Get(RecordType.A, A<string>._, A<CancellationToken>._)).Returns(new DnsRecord(RecordType.A, "www", TimeSpan.FromMinutes(5), ["192.0.2.1"]));
         A.CallTo(() => stun.GetSelfWanAddress(A<CancellationToken>._)).ReturnsNextFromSequence(
             new SelfWanAddressResponse(IPAddress.Parse("192.0.2.2"), new DnsEndPoint("example.com", 3478), IPEndPoint.Parse("192.0.2.3")),
             new SelfWanAddressResponse(IPAddress.Parse("192.0.2.2"), new DnsEndPoint("example2.com", 3478), IPEndPoint.Parse("192.1.2.3")),

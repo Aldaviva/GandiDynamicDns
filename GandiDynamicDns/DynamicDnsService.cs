@@ -93,7 +93,7 @@ public class DynamicDnsServiceImpl(ILiveDns liveDns, ISelfWanAddressClient stun,
     private async Task updateDnsRecord(IPAddress currentIPAddress, CancellationToken ct = default) {
         if (!configuration.Value.dryRun) {
             try {
-                await liveDns.Set(new DnsRecord(RecordType.A, configuration.Value.subdomain, configuration.Value.dnsRecordTimeToLive, currentIPAddress.ToString()), ct);
+                await liveDns.Set(new DnsRecord(RecordType.A, configuration.Value.subdomain, configuration.Value.dnsRecordTimeToLive, [currentIPAddress.ToString()]), ct);
             } catch (GandiException e) {
                 logger.LogError(e, "Failed to update DNS record for {fqdn} to {newAddr} due to DNS API server error", configuration.Value.fqdn, currentIPAddress);
             }

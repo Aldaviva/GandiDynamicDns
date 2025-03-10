@@ -24,6 +24,7 @@ public static class GandiClientFactory {
         return gandi;
     }
 
+    /// <exception cref="ArgumentException">auth token is invalid</exception>
     private static string getValidAuthToken(Configuration config) => Configuration.isAuthTokenValid(config.gandiAuthToken)
         ? config.gandiAuthToken : throw new ArgumentException($"Missing or invalid required configuration option {nameof(Configuration.gandiAuthToken)} in appsettings.json.");
 

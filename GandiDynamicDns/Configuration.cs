@@ -2,6 +2,7 @@
 // ReSharper disable MemberCanBePrivate.Global - set by config
 
 using Gandi.Dns;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.RegularExpressions;
 
 namespace GandiDynamicDns;
@@ -39,7 +40,7 @@ public partial record Configuration {
 
     public string fqdn => subdomain == DOMAIN_ROOT ? domain : $"{subdomain}.{domain}";
 
-    public static bool isAuthTokenValid(string? authToken) => authToken != null && validAuthTokenPattern().IsMatch(authToken);
+    public static bool isAuthTokenValid([NotNullWhen(true)] string? authToken) => authToken != null && validAuthTokenPattern().IsMatch(authToken);
 
     [GeneratedRegex("^[A-Za-z0-9]{24}|[a-f0-9]{40}$")]
     private static partial Regex validAuthTokenPattern();
