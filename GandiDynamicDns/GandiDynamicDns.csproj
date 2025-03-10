@@ -2,14 +2,14 @@
 
     <PropertyGroup>
         <OutputType>Exe</OutputType>
-        <TargetFrameworks>net8.0;net8.0-windows</TargetFrameworks>
+        <TargetFramework>net8.0</TargetFramework>
         <RuntimeIdentifiers>win-x64;win-arm64;linux-x64;linux-arm;linux-arm64</RuntimeIdentifiers>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <RollForward>latestMajor</RollForward>
         <LangVersion>latest</LangVersion>
         <NoWarn>$(NoWarn);8524;VSTHRD200</NoWarn>
-        <Version>0.3.1</Version>
+        <Version>0.4.0</Version>
         <Authors>Ben Hutchison</Authors>
         <Copyright>© 2025 $(Authors)</Copyright>
         <Company>$(Authors)</Company>
@@ -17,27 +17,24 @@
         <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
         <ApplicationIcon>favicon.ico</ApplicationIcon>
         <ApplicationManifest>app.manifest</ApplicationManifest>
-        <PublishSingleFile>true</PublishSingleFile>
+        <!-- <PublishSingleFile>true</PublishSingleFile> -->
         <SelfContained>false</SelfContained>
     </PropertyGroup>
 
     <ItemGroup>
         <AdditionalFiles Include="ExceptionAdjustments.txt" />
         <Content Include="favicon.ico" />
+        <None Include="..\.github*\**;..\Readme.md" />
+        <InternalsVisibleTo Include="Tests" />
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="G6.GandiLiveDns" Version="1.0.0" />
-        <PackageReference Include="JetBrains.Annotations" Version="2024.3.0" />
+        <PackageReference Include="Gandi" Version="0.0.0-alpha4" />
         <PackageReference Include="Microsoft.Extensions.Hosting.Systemd" Version="9.0.2" />
         <PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="9.0.2" />
-        <PackageReference Include="Stun.Net" Version="8.0.2" />
-        <PackageReference Include="ThrottleDebounce" Version="2.0.0" />
-        <PackageReference Include="Unfucked" Version="0.0.0-beta4" />
-        <PackageReference Include="Unfucked.Caching" Version="0.0.0-beta3" />
-        <PackageReference Include="Unfucked.DI" Version="0.0.0-beta4" />
-        <PackageReference Include="Unfucked.DNS" Version="0.0.0-beta2" />
-        <PackageReference Include="Unfucked.STUN" Version="0.0.0-beta3" />
+        <PackageReference Include="ThrottleDebounce" Version="3.0.0-beta1" />
+        <PackageReference Include="Unfucked.DI" Version="0.0.0-beta5" />
+        <PackageReference Include="Unfucked.STUN" Version="0.0.0-beta5" />
     </ItemGroup>
 
     <ItemGroup Condition="$(RuntimeIdentifier.StartsWith('win'))">
@@ -51,24 +48,5 @@
     <PropertyGroup Condition="$(RuntimeIdentifier.StartsWith('linux'))">
         <AssemblyName>$(AssemblyName.ToLower())</AssemblyName>
     </PropertyGroup>
-
-    <ItemGroup>
-        <InternalsVisibleTo Include="Tests" />
-    </ItemGroup>
-
-    <ItemGroup>
-        <!--<Reference Include="Unfucked">
-            <HintPath>..\..\Unfucked\Unfucked\bin\Debug\net8.0\Unfucked.dll</HintPath>
-        </Reference>
-        <Reference Include="Unfucked.Caching">
-            <HintPath>..\..\Unfucked\Caching\bin\Debug\netstandard2.0\Unfucked.Caching.dll</HintPath>
-        </Reference>-->
-        <!--<Reference Include="Unfucked.DI">
-            <HintPath>..\..\Unfucked\DI\bin\Debug\net6.0\Unfucked.DI.dll</HintPath>
-        </Reference>-->
-        <!--<Reference Include="Unfucked.STUN">
-            <HintPath>..\..\Unfucked\STUN\bin\Debug\net8.0\Unfucked.STUN.dll</HintPath>
-        </Reference>-->
-    </ItemGroup>
 
 </Project>

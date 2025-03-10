@@ -1,5 +1,5 @@
-﻿using G6.GandiLiveDns;
-using GandiDynamicDns.Net.Dns;
+﻿using Gandi;
+using Gandi.Dns;
 using Microsoft.Extensions.Options;
 using System.Diagnostics;
 using System.Net;
@@ -15,7 +15,7 @@ public interface DynamicDnsService: IDisposable {
 
 }
 
-public class DynamicDnsServiceImpl(DnsManager dns, ISelfWanAddressClient stun, IOptions<Configuration> configuration, ILogger<DynamicDnsServiceImpl> logger, IHostApplicationLifetime lifetime)
+public class DynamicDnsServiceImpl(ILiveDns liveDns, ISelfWanAddressClient stun, IOptions<Configuration> configuration, ILogger<DynamicDnsServiceImpl> logger, IHostApplicationLifetime lifetime)
     : BackgroundService, DynamicDnsService {
 
     public IPAddress? selfWanAddress { get; private set; }
@@ -29,13 +29,14 @@ public class DynamicDnsServiceImpl(DnsManager dns, ISelfWanAddressClient stun, I
 
     protected override async Task ExecuteAsync(CancellationToken ct) {
         await Retrier.Attempt(async _ => {
-                if ((await dns.fetchDnsRecords(configuration.Value.subdomain, configuration.Value.domain, DnsRecordType.A, ct)).FirstOrDefault() is { } existingIpAddress) {
+                if ((await liveDns.Get(RecordType.A, configuration.Value.subdomain, ct))?.Values.First() is { } existingIpAddress) {
                     try {
                         selfWanAddress = IPAddress.Parse(existingIpAddress);
                     } catch (FormatException) { }
                 }
             }, maxAttempts: null, delay: _ => TimeSpan.FromSeconds(15), ex => ex is HttpRequestException or TaskCanceledException,
-            beforeRetry: () => logger.LogWarning("Failed to fetch existing DNS record from Gandi HTTP API server, retrying"), ct);
+            beforeRetry: (i, e) =>
+                logger.LogWarning("Failed to fetch existing DNS record from Gandi HTTP API server, retrying (attempt {attempt}) {eType}: {message}", i + 2, e.GetType().Name, e.Message), ct);
 
         logger.LogInformation("On startup, the {fqdn} DNS A record was pointing to {address}", configuration.Value.fqdn, selfWanAddress?.ToString() ?? "(nothing)");
 
@@ -92,8 +93,8 @@ public class DynamicDnsServiceImpl(DnsManager dns, ISelfWanAddressClient stun, I
     private async Task updateDnsRecord(IPAddress currentIPAddress, CancellationToken ct = default) {
         if (!configuration.Value.dryRun) {
             try {
-                await dns.setDnsRecord(configuration.Value.subdomain, configuration.Value.domain, DnsRecordType.A, configuration.Value.dnsRecordTimeToLive, [currentIPAddress.ToString()], ct);
-            } catch (ApiException e) {
+                await liveDns.Set(new DnsRecord(RecordType.A, configuration.Value.subdomain, configuration.Value.dnsRecordTimeToLive, currentIPAddress.ToString()), ct);
+            } catch (GandiException e) {
                 logger.LogError(e, "Failed to update DNS record for {fqdn} to {newAddr} due to DNS API server error", configuration.Value.fqdn, currentIPAddress);
             }
         } else {

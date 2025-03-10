@@ -22,8 +22,8 @@ This is an alternative to filling out monthly CAPTCHAs for [No-IP](https://www.n
     - ✅ Domain must be using [LiveDNS](https://www.gandi.net/en-US/domain/dns), the default for new domains (`ns-*-*.gandi.net`)
     - ❌ Classic DNS (`*.dns.gandi.net`) is incompatible; you will need to [migrate to LiveDNS](https://docs.gandi.net/en/domain_names/common_operations/changing_nameservers.html#switching-to-livedns)
     - ❌ External nameservers (with glue records) are incompatible; you will need to update the record on the external nameserver instead of on Gandi's nameservers
-- Your computer must have a public WAN IPv4 address
-    - IPv6 is not supported because router NATs don't support IPv6 port forwarding, so an `AAAA` record wouldn't be useful
+- Your computer or router must have a public WAN IPv4 address
+    - IPv6 is not supported at this time
 
 ## Installation
 1. Download the [latest release](https://github.com/Aldaviva/GandiDynamicDns/releases/latest) ZIP archive for your operating system and CPU architecture
@@ -43,7 +43,7 @@ Open `appsettings.json` in a text editor and fill in the following values. Keys 
 
 |Key|Type|Examples|Description|
 |-|-|-|-|
-|`gandiApiKey` ✴|`string`|`abcdefg`|Generate an API key under [Developer access](https://account.gandi.net/en/users/_/security) in your [Gandi Account](https://account.gandi.net/en). Does not accept Personal Access Tokens because they expire after a short duration and can't be refreshed, rendering them useless for headless service scenarios, and they're incompatible with the underlying third-party API client anyway.|
+|`gandiAuthToken` ✴|`string`|`b03d46cd5af9e827fde09eb3b880e468b4e6dbeb` `Ln5yfyRCnNDSxQnWAFn5Zdyi`|A [Gandi Personal Access Token or API Key](https://api.gandi.net/docs/authentication/).<br>You can [create a Personal Access Token for your user](https://admin.gandi.net/organizations/account/pat) or [for your organization](https://admin.gandi.net/organizations/). The token must be scoped to include the `domain` to be updated, and must have permissions to "Manage domain name technical configurations." Make sure to set a calendar reminder for when this token expires, so you can generate a new token and update this configuration!<br>If you don't already have an API Key, it's too late to create one. If you forgot your existing API Key, you may regenerate it in [Developer access](https://account.gandi.net/en/users/_/security).<br>You can edit this property and save `appsettings.json`, and the new token will take effect immediately without you having to restart this program.|
 |`domain` ✴|`string`|`example.com`<br>`example.co.uk`|The second-level domain name that you registered, including the TLD.|
 |`subdomain` ✴|`string`|`www`<br>`@`<br>`api.stage`|The subdomain whose DNS record you want to update, not including `domain` or a trailing period. To update `domain` itself, set this to `@` (default). Can also be a multi-level subdomain.|
 |`updateInterval`|`TimeSpan`|`0.00:05:00`|How frequently this program will check if your public IP address has changed and update DNS. Format is `d.hh:mm:ss`. Defaults to 5 minutes.<br>**One-shot mode:** if set to `0:0:0` or negative, this program will exit after the first update attempt, instead of remaining running and updating periodically; useful for custom triggers, like `cron` or systemd timers.|

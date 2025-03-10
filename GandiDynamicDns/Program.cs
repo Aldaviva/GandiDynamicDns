@@ -1,15 +1,20 @@
-﻿using GandiDynamicDns;
-using GandiDynamicDns.Net.Dns;
+﻿using Gandi;
+using Gandi.Dns;
+using GandiDynamicDns;
 using GandiDynamicDns.Util;
 using Microsoft.Extensions.Options;
-using System.Net.Security;
-using System.Security.Authentication;
+using System.Net.Http.Headers;
+using System.Reflection;
 using Unfucked;
-using Unfucked.DNS;
+using Unfucked.HTTP;
 using Unfucked.STUN;
 
+// ReSharper disable RedundantTypeArgumentsOfMethod - make service declarations more readable
+
+AssemblyName assemblyName = typeof(Program).Assembly.GetName();
+
 if (args.Intersect(["--version", "-v"], StringComparer.InvariantCulture).Any()) {
-    Console.WriteLine(typeof(Program).Assembly.GetName().Version!.ToString(3));
+    Console.WriteLine(assemblyName.Version!.ToString(3));
     return;
 }
 
@@ -24,25 +29,17 @@ appConfig.Services
     .AddSystemd()
     .AddWindowsService(WindowsService.configure)
     .Configure<Configuration>(appConfig.Configuration)
-    .AddSingleton(_ => new HttpClient(new SocketsHttpHandler {
-        AllowAutoRedirect        = true,
-        ConnectTimeout           = TimeSpan.FromSeconds(10),
-        PooledConnectionLifetime = TimeSpan.FromMinutes(15),
-        MaxConnectionsPerServer  = 8,
-        SslOptions = new SslClientAuthenticationOptions {
-            EnabledSslProtocols = SslProtocols.Tls12 | SslProtocols.Tls13
+    .AddSingleton<HttpClient>(_ => new UnfuckedHttpClient {
+        DefaultRequestHeaders = {
+            UserAgent = {
+                new ProductInfoHeaderValue("(+https://github.com/Aldaviva/GandiDynamicDns)") // program name and version already added by UnfuckedHttpClient
+            }
         }
-    }) { Timeout = TimeSpan.FromSeconds(20) })
+    })
     .AddHostedService<DynamicDnsServiceImpl>()
     .SetExitCodeOnBackgroundServiceException()
-    .AddSingleton<IGandiLiveDns>(provider => {
-        string apiKey = provider.GetRequiredService<IOptions<Configuration>>().Value.gandiApiKey;
-        if (string.IsNullOrWhiteSpace(apiKey) || apiKey == "<Generate an API key on https://account.gandi.net/en/users/_/security>") {
-            throw new ArgumentException($"Missing configuration option {nameof(Configuration.gandiApiKey)} in appsettings.json");
-        }
-        return new GandiLiveDns { ApiKey = apiKey };
-    })
-    .AddSingleton<DnsManager, GandiDnsManager>()
+    .AddSingleton<IGandiClient>(GandiClientFactory.createGandiClient)
+    .AddSingleton<ILiveDns>(provider => provider.GetRequiredService<IGandiClient>().LiveDns(provider.GetRequiredService<IOptions<Configuration>>().Value.domain))
     .AddStunClient(ctx => new StunOptions { serverHostnameBlacklist = ctx.GetRequiredService<IOptions<Configuration>>().Value.stunServerBlacklist });
 
 using IHost app = appConfig.Build();
