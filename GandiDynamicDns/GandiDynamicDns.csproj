@@ -33,7 +33,7 @@
         <PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="9.0.2" />
         <PackageReference Include="Stun.Net" Version="8.0.2" />
         <PackageReference Include="ThrottleDebounce" Version="2.0.0" />
-        <PackageReference Include="Unfucked" Version="0.0.0-beta4" />
+        <PackageReference Include="Unfucked" Version="0.0.0-beta7" />
         <PackageReference Include="Unfucked.Caching" Version="0.0.0-beta3" />
         <PackageReference Include="Unfucked.DI" Version="0.0.0-beta4" />
         <PackageReference Include="Unfucked.DNS" Version="0.0.0-beta2" />
