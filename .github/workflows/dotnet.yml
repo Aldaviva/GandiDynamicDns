@@ -15,15 +15,19 @@ jobs:
         include:
           - os: ubuntu-latest
             targetPlatform: linux-x64
+            targetRuntime: net8.0
             skipTests: false
           - os: ubuntu-latest
             targetPlatform: linux-arm
+            targetRuntime: net8.0
             skipTests: true
           - os: ubuntu-latest
             targetPlatform: linux-arm64
+            targetRuntime: net8.0
             skipTests: true
           - os: windows-latest
             targetPlatform: win-x64
+            targetRuntime: net8.0-windows
             skipTests: false
 
     runs-on: ${{ matrix.os }}
@@ -42,17 +46,17 @@ jobs:
       run: dotnet restore ${{ env.ProjectName }} --locked-mode --verbosity normal
 
     - name: Build
-      run: dotnet build ${{ env.ProjectName }} --no-restore --runtime ${{ matrix.TargetPlatform }} --configuration Release --no-self-contained
+      run: dotnet build ${{ env.ProjectName }} --no-restore --framework ${{ matrix.TargetRuntime }} --runtime ${{ matrix.TargetPlatform }} --configuration Release --no-self-contained
 
     - name: Publish
-      run: dotnet publish ${{ env.ProjectName }} --no-build --runtime ${{ matrix.TargetPlatform }} --configuration Release --no-self-contained -p:PublishSingleFile=true
+      run: dotnet publish ${{ env.ProjectName }} --no-build --framework ${{ matrix.TargetRuntime }} --runtime ${{ matrix.TargetPlatform }} --configuration Release --no-self-contained -p:PublishSingleFile=true
 
     - name: Test
       shell: bash
       if: ${{ !matrix.skipTests }}
       run: |
         testExitCode=0
-        dotnet test --runtime ${{ matrix.targetPlatform }} --configuration Release --collect:"XPlat Code Coverage" --settings Tests/Tests.runsettings --logger "trx;LogFileName=TestResults.xml" || testExitCode=$?
+        dotnet test --framework ${{ matrix.TargetRuntime }} --runtime ${{ matrix.targetPlatform }} --configuration Release --collect:"XPlat Code Coverage" --settings Tests/Tests.runsettings --logger "trx;LogFileName=TestResults.xml" || testExitCode=$?
         echo "TEST_EXIT_CODE=$testExitCode" >> $GITHUB_ENV
         cp Tests/TestResults/*/coverage.info Tests/TestResults
         exit 0
@@ -78,9 +82,9 @@ jobs:
       with:
         name: ${{ env.ProjectName }}-${{ matrix.TargetPlatform }}
         path: |
-          ${{ env.ProjectName }}/bin/Release/net8.0/${{ matrix.TargetPlatform }}/publish/GandiDynamicDns.exe
-          ${{ env.ProjectName }}/bin/Release/net8.0/${{ matrix.TargetPlatform }}/publish/gandidynamicdns
-          ${{ env.ProjectName }}/bin/Release/net8.0/${{ matrix.TargetPlatform }}/publish/appsettings.json
-          ${{ env.ProjectName }}/bin/Release/net8.0/${{ matrix.TargetPlatform }}/publish/Install service.ps1
-          ${{ env.ProjectName }}/bin/Release/net8.0/${{ matrix.TargetPlatform }}/publish/gandidynamicdns.service
+          ${{ env.ProjectName }}/bin/Release/${{ matrix.TargetRuntime }}/${{ matrix.TargetPlatform }}/publish/GandiDynamicDns.exe
+          ${{ env.ProjectName }}/bin/Release/${{ matrix.TargetRuntime }}/${{ matrix.TargetPlatform }}/publish/gandidynamicdns
+          ${{ env.ProjectName }}/bin/Release/${{ matrix.TargetRuntime }}/${{ matrix.TargetPlatform }}/publish/appsettings.json
+          ${{ env.ProjectName }}/bin/Release/${{ matrix.TargetRuntime }}/${{ matrix.TargetPlatform }}/publish/Install service.ps1
+          ${{ env.ProjectName }}/bin/Release/${{ matrix.TargetRuntime }}/${{ matrix.TargetPlatform }}/publish/gandidynamicdns.service
         if-no-files-found: error

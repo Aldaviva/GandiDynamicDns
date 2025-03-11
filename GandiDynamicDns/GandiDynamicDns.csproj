@@ -2,7 +2,7 @@
 
     <PropertyGroup>
         <OutputType>Exe</OutputType>
-        <TargetFramework>net8.0</TargetFramework>
+        <TargetFrameworks>net8.0;net8.0-windows</TargetFrameworks> <!-- Windows TFM is for Event Log -->
         <RuntimeIdentifiers>win-x64;win-arm64;linux-x64;linux-arm;linux-arm64</RuntimeIdentifiers>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
@@ -28,10 +28,11 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Gandi" Version="0.0.0-alpha4" />
+        <PackageReference Include="Gandi" Version="0.0.0-alpha5" />
         <PackageReference Include="Microsoft.Extensions.Hosting.Systemd" Version="9.0.2" />
         <PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="9.0.2" />
         <PackageReference Include="ThrottleDebounce" Version="3.0.0-beta1" />
+        <PackageReference Include="Unfucked" Version="0.0.0-beta8" />
         <PackageReference Include="Unfucked.DI" Version="0.0.0-beta5" />
         <PackageReference Include="Unfucked.STUN" Version="0.0.0-beta5" />
     </ItemGroup>
