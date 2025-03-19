@@ -28,9 +28,9 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Gandi" Version="0.0.0-alpha5" />
-        <PackageReference Include="Microsoft.Extensions.Hosting.Systemd" Version="9.0.2" />
-        <PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="9.0.2" />
+        <PackageReference Include="Gandi" Version="1.0.0" />
+        <PackageReference Include="Microsoft.Extensions.Hosting.Systemd" Version="9.0.3" />
+        <PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="9.0.3" />
         <PackageReference Include="ThrottleDebounce" Version="3.0.0-beta1" />
         <PackageReference Include="Unfucked" Version="0.0.0-beta8" />
         <PackageReference Include="Unfucked.DI" Version="0.0.0-beta5" />
