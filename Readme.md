@@ -26,6 +26,8 @@ This is an alternative to filling out monthly CAPTCHAs for [No-IP](https://www.n
     - IPv6 is not supported at this time
 
 ## Installation
+
+### Executable
 1. Download the [latest release](https://github.com/Aldaviva/GandiDynamicDns/releases/latest) ZIP archive for your operating system and CPU architecture
 1. Extract the ZIP archive to a directory, such as `C:\Program Files\GandiDynamicDns\` or `/opt/gandidynamicdns/`
     - Extract `appsettings.json` during a new installation, but not when upgrading an existing installation
@@ -37,6 +39,10 @@ This is an alternative to filling out monthly CAPTCHAs for [No-IP](https://www.n
         sudo systemctl daemon-reload
         sudo systemctl enable gandidynamicdns.service
         ```
+
+### Container
+This program is also available in [a Docker container](https://hub.docker.com/r/d0mmi/gandidynamicdns), created and maintained by [Dommi](https://github.com/d0mmi).
+1. Follow the [repo's container usage instructions](https://github.com/d0mmi/GandiDynamicDnsDocker#usage) to pull the image and mount your `appsettings.json` file
 
 ## Configuration
 Open `appsettings.json` in a text editor and fill in the following values. Keys marked with ✴ are the most important ones to configure.
