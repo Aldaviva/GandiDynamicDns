@@ -45,12 +45,12 @@
       },
       "Unfucked.DI": {
         "type": "Direct",
-        "requested": "[0.0.0-beta5, )",
-        "resolved": "0.0.0-beta5",
-        "contentHash": "7gLJ4lJHLQhJWaQYr/Nk60FN1LwCzEewUmVWBposoeRyMxL+Q3BccSOBCYmwadxXJXA62JXcOflXi4PsuDQl9Q==",
+        "requested": "[0.0.0-beta6, )",
+        "resolved": "0.0.0-beta6",
+        "contentHash": "cqGPHz0NpuP2XyIfvy2BGrHMrpGVFwohOlm5orv02oKnf99GLYOnOYDYIyNWmNXSnLjVBUul6mx210ka0wqlhw==",
         "dependencies": {
           "Microsoft.Extensions.Hosting": "8.0.1",
-          "Unfucked": "0.0.0-beta5"
+          "Unfucked": "0.0.0-beta8"
         }
       },
       "Unfucked.STUN": {
@@ -748,12 +748,12 @@
       },
       "Unfucked.DI": {
         "type": "Direct",
-        "requested": "[0.0.0-beta5, )",
-        "resolved": "0.0.0-beta5",
-        "contentHash": "7gLJ4lJHLQhJWaQYr/Nk60FN1LwCzEewUmVWBposoeRyMxL+Q3BccSOBCYmwadxXJXA62JXcOflXi4PsuDQl9Q==",
+        "requested": "[0.0.0-beta6, )",
+        "resolved": "0.0.0-beta6",
+        "contentHash": "cqGPHz0NpuP2XyIfvy2BGrHMrpGVFwohOlm5orv02oKnf99GLYOnOYDYIyNWmNXSnLjVBUul6mx210ka0wqlhw==",
         "dependencies": {
           "Microsoft.Extensions.Hosting": "8.0.1",
-          "Unfucked": "0.0.0-beta5"
+          "Unfucked": "0.0.0-beta8"
         }
       },
       "Unfucked.STUN": {
