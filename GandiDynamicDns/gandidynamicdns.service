@@ -3,8 +3,8 @@
 # Install:           sudo systemctl daemon-reload
 # Enable auto-start: sudo systemctl enable gandidynamicdns.service
 # Start:             sudo systemctl start gandidynamicdns.service
-# Check status:      sudo systemctl status gandidynamicdns.service
-# Read logs:         sudo journalctl -u gandidynamicdns.service
+# Check status:      systemctl status gandidynamicdns.service
+# Read logs:         journalctl -f -u gandidynamicdns.service
 #
 # Source: https://devblogs.microsoft.com/dotnet/net-core-and-systemd/
 
