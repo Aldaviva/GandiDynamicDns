@@ -23,6 +23,8 @@ public class DynamicDnsServiceImpl(ILiveDns liveDns, ISelfWanAddressClient stun,
 
     public IPAddress? selfWanAddress { get; private set; }
 
+    private readonly IDictionary<string, IPAddress?> initialRecordValues = new Dictionary<string, IPAddress?>(configuration.Value.subdomains.Count);
+
     private readonly EventLog? eventLog =
 #if WINDOWS
         new("Application") { Source = "GandiDynamicDns" };
@@ -32,18 +34,23 @@ public class DynamicDnsServiceImpl(ILiveDns liveDns, ISelfWanAddressClient stun,
 
     protected override async Task ExecuteAsync(CancellationToken ct) {
         try {
-            await Retrier.Attempt(
-                async _ => { // this retry is to handle the case where the service starts before the computer connects to the network on bootup, not where Gandi's API servers are down
-                    if ((await liveDns.Get(RecordType.A, configuration.Value.subdomain, ct))?.Values.First() is { } existingIpAddress) {
-                        try {
-                            selfWanAddress = IPAddress.Parse(existingIpAddress);
-                        } catch (FormatException) { }
-                    }
-                }, maxAttempts: null, delay: _ => TimeSpan.FromSeconds(3), ex => ex is not (OutOfMemoryException or GandiException { InnerException: ClientErrorException }),
-                beforeRetry: async (i, e) =>
-                    logger.LogWarning("Failed to fetch existing DNS record from Gandi HTTP API server, retrying (attempt {attempt}): {message}", i + 2, e.MessageChain()), ct);
+            foreach (string subdomain in configuration.Value.subdomains) {
+                // this retry is to handle the case where the service starts before the computer connects to the network on bootup, not where Gandi's API servers are down
+                await Retrier.Attempt(async _ => {
+                        IPAddress? initialRecordValue = null;
+                        if ((await liveDns.Get(RecordType.A, subdomain, ct))?.Values.First() is { } existingIpAddress) {
+                            try {
+                                initialRecordValue = IPAddress.Parse(existingIpAddress);
+                            } catch (FormatException) { }
+                        }
+                        initialRecordValues[subdomain] = initialRecordValue;
+                    }, maxAttempts: null, delay: Retrier.Delays.Constant(TimeSpan.FromSeconds(3)), ex => ex is not (OutOfMemoryException or GandiException { InnerException: ClientErrorException }),
+                    beforeRetry: async (i, e) =>
+                        logger.LogWarning("Failed to fetch existing DNS record from Gandi HTTP API server, retrying (attempt {attempt}): {message}", i + 2, e.MessageChain()), ct);
 
-            logger.LogInformation("On startup, the {fqdn} DNS A record is pointing to {address}", configuration.Value.fqdn, selfWanAddress?.ToString() ?? "(nothing)");
+                logger.LogInformation("On startup, the {subdomain}.{domain} DNS A record is pointing to {address}", subdomain, configuration.Value.domain,
+                    initialRecordValues[subdomain]?.ToString() ?? "(nothing)");
+            }
 
             if (configuration.Value.updateInterval > ONE_SHOT_MODE) {
                 logger.LogInformation("Checking for public IP address changes every {period}", configuration.Value.updateInterval);
@@ -74,26 +81,35 @@ public class DynamicDnsServiceImpl(ILiveDns liveDns, ISelfWanAddressClient stun,
 
     private async Task updateDnsRecordIfNecessary(CancellationToken ct = default) {
         SelfWanAddressResponse originalResponse = await stun.GetSelfWanAddress(ct);
-        if (originalResponse.SelfWanAddress != null && !originalResponse.SelfWanAddress.Equals(selfWanAddress)) {
-            int unanimity = (int) Math.Max(1, configuration.Value.unanimity);
-            if (await getUnanimousAgreement(originalResponse, unanimity, ct)) {
-                logger.LogInformation(
-                    "This computer's public IP address changed from {old} to {new} according to {server} ({serverAddr}) and {extraServerCount:N0} other STUN servers, updating {fqdn} A record in DNS server",
-                    selfWanAddress, originalResponse.SelfWanAddress, originalResponse.Server.Host, originalResponse.ServerAddress.ToString(), unanimity - 1, configuration.Value.fqdn);
+        if (originalResponse.SelfWanAddress != null) {
+            bool updateRequired = selfWanAddress == null
+                ? initialRecordValues.Any(pair => !originalResponse.SelfWanAddress.Equals(pair.Value))
+                : !originalResponse.SelfWanAddress.Equals(selfWanAddress);
+            if (updateRequired) {
+                int unanimity = (int) Math.Max(1, configuration.Value.unanimity);
+                if (await getUnanimousAgreement(originalResponse, unanimity, ct)) {
+                    logger.LogInformation(
+                        "This computer's public IP address changed from {old} to {new} according to {server} ({serverAddr}) and {extraServerCount:N0} other STUN servers, updating {recordCount} A records in DNS server",
+                        selfWanAddress, originalResponse.SelfWanAddress, originalResponse.Server.Host, originalResponse.ServerAddress.ToString(), unanimity - 1, configuration.Value.subdomains.Count);
 #if WINDOWS
-                eventLog?.WriteEntry(
-                    $"This computer's public IP address changed from {selfWanAddress} to {originalResponse.SelfWanAddress}, according to {originalResponse.Server.Host} ({originalResponse.ServerAddress}) and {unanimity - 1:N0} others, updating {configuration.Value.fqdn} A record in DNS server",
-                    EventLogEntryType.Information, 1);
+                    eventLog?.WriteEntry(
+                        $"This computer's public IP address changed from {selfWanAddress} to {originalResponse.SelfWanAddress}, according to {originalResponse.Server.Host} ({originalResponse.ServerAddress}) and {unanimity - 1:N0} others, updating {configuration.Value.subdomains.Count} A records in DNS server",
+                        EventLogEntryType.Information, 1);
 #endif
 
-                selfWanAddress = originalResponse.SelfWanAddress;
-                await updateDnsRecord(originalResponse.SelfWanAddress, ct);
+                    selfWanAddress = originalResponse.SelfWanAddress;
+                    await updateDnsRecords(originalResponse.SelfWanAddress!, ct);
+                } else {
+                    logger.LogWarning("Not updating DNS A record because there was a disagreement among {serverCount:N0} STUN servers about our public IP address, leaving it set to {value}",
+                        unanimity, selfWanAddress);
+                }
             } else {
-                logger.LogWarning("Not updating DNS A record for {fqdn} because there was a disagreement among {serverCount:N0} STUN servers about our public IP address, leaving it set to {value}",
-                    configuration.Value.fqdn, unanimity, selfWanAddress);
+                selfWanAddress ??= originalResponse.SelfWanAddress;
+                logger.LogDebug("Not updating DNS A records because they are all already set to {value}", selfWanAddress);
             }
         } else {
-            logger.LogDebug("Not updating DNS A record for {fqdn} because it is already set to {value}", configuration.Value.fqdn, selfWanAddress);
+            logger.LogDebug("STUN request to {server} ({serverAddr}) did not return a public WAN IP address, will try again with a different server next time", originalResponse.Server.Host,
+                originalResponse.ServerAddress.ToString());
         }
     }
 
@@ -110,19 +126,21 @@ public class DynamicDnsServiceImpl(ILiveDns liveDns, ISelfWanAddressClient stun,
         return extraResponses.All(extra => originalResponse.SelfWanAddress!.Equals(extra.SelfWanAddress));
     }
 
-    private async Task updateDnsRecord(IPAddress currentIPAddress, CancellationToken ct = default) {
-        if (!configuration.Value.dryRun) {
-            try {
-                await liveDns.Set(new DnsRecord(RecordType.A, configuration.Value.subdomain, configuration.Value.dnsRecordTimeToLive, [currentIPAddress.ToString()]), ct);
-            } catch (GandiException e) {
-                logger.LogError(e, "Failed to update DNS record for {fqdn} to {newAddr} due to DNS API server error", configuration.Value.fqdn, currentIPAddress);
-                if (e is GandiException.AuthException or { InnerException: ForbiddenException or NotAuthorizedException }) {
-                    throw;
+    private async Task updateDnsRecords(IPAddress currentIPAddress, CancellationToken ct = default) {
+        foreach (string subdomain in configuration.Value.subdomains) {
+            if (!configuration.Value.dryRun) {
+                try {
+                    await liveDns.Set(new DnsRecord(RecordType.A, subdomain, configuration.Value.dnsRecordTimeToLive, [currentIPAddress.ToString()]), ct);
+                } catch (GandiException e) {
+                    logger.LogError(e, "Failed to update DNS record for {subdomain}.{domain} to {newAddr} due to DNS API server error", subdomain, configuration.Value.domain, currentIPAddress);
+                    if (e is GandiException.AuthException or { InnerException: ForbiddenException or NotAuthorizedException }) {
+                        throw;
+                    }
                 }
+            } else {
+                logger.LogInformation("Dry run mode, not updating {subdomain}.{domain} to {newAddr}. To actually make DNS changes, change {dryRun} from true to false in appsettings.json.", subdomain,
+                    configuration.Value.domain, currentIPAddress, nameof(Configuration.dryRun));
             }
-        } else {
-            logger.LogInformation("Dry run mode, not updating {fqdn} to {newAddr}. To actually make DNS changes, change {dryRun} from true to false in appsettings.json.", configuration.Value.fqdn,
-                currentIPAddress, nameof(Configuration.dryRun));
         }
     }
 

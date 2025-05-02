@@ -3,6 +3,8 @@ using Gandi.Dns;
 using GandiDynamicDns;
 using GandiDynamicDns.Util;
 using Microsoft.Extensions.Options;
+using RuntimeUpgrade.Notifier;
+using RuntimeUpgrade.Notifier.Data;
 using System.Net.Http.Headers;
 using System.Reflection;
 using Unfucked;
@@ -29,6 +31,7 @@ appConfig.Services
     .AddSystemd()
     .AddWindowsService(WindowsService.configure)
     .Configure<Configuration>(appConfig.Configuration)
+    .PostConfigure<Configuration>(configuration => configuration.sanitize())
     .AddSingleton<HttpClient>(_ => new UnfuckedHttpClient {
         DefaultRequestHeaders = {
             UserAgent = {
@@ -43,5 +46,10 @@ appConfig.Services
     .AddStunClient(ctx => new StunOptions { serverHostnameBlacklist = ctx.GetRequiredService<IOptions<Configuration>>().Value.stunServerBlacklist });
 
 using IHost app = appConfig.Build();
+
+using RuntimeUpgradeNotifier upgradeNotifier = new() {
+    LoggerFactory   = app.Services.GetRequiredService<ILoggerFactory>(),
+    RestartStrategy = RestartStrategy.AutoRestartService
+};
 
 await app.RunAsync();
