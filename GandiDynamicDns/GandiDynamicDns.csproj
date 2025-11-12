@@ -18,7 +18,7 @@
         <ApplicationManifest>app.manifest</ApplicationManifest>
         <SelfContained>false</SelfContained>
         <DebugType>embedded</DebugType>
-        <RuntimeLibraryVersion>10.0.0</RuntimeLibraryVersion>
+        <RuntimeLibraryVersion>9.0.11</RuntimeLibraryVersion>
     </PropertyGroup>
 
     <ItemGroup>
