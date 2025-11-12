@@ -25,7 +25,7 @@ jobs:
             targetPlatform: linux-arm64
             targetRuntime: net8.0
             skipTests: true
-          - os: windows-latest
+          - os: windows-2022
             targetPlatform: win-x64
             targetRuntime: net8.0-windows
             skipTests: false
@@ -43,7 +43,7 @@ jobs:
         domain: ${{github.repository_owner}}
 
     - name: Restore
-      run: dotnet restore ${{ env.ProjectName }} --locked-mode --verbosity normal
+      run: dotnet restore ${{ env.ProjectName }} --locked-mode
 
     - name: Build
       run: dotnet build ${{ env.ProjectName }} --no-restore --framework ${{ matrix.TargetRuntime }} --runtime ${{ matrix.TargetPlatform }} --configuration Release --no-self-contained
