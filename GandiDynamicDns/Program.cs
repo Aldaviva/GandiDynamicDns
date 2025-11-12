@@ -1,4 +1,4 @@
-﻿using Gandi;
+using Gandi;
 using Gandi.Dns;
 using GandiDynamicDns;
 using GandiDynamicDns.Util;
@@ -43,7 +43,7 @@ appConfig.Services
     .SetExitCodeOnBackgroundServiceException()
     .AddSingleton<IGandiClient>(GandiClientFactory.createGandiClient)
     .AddSingleton<ILiveDns>(provider => provider.GetRequiredService<IGandiClient>().LiveDns(provider.GetRequiredService<IOptions<Configuration>>().Value.domain))
-    .AddStunClient(ctx => new StunOptions { serverHostnameBlacklist = ctx.GetRequiredService<IOptions<Configuration>>().Value.stunServerBlacklist });
+    .AddStunClient(ctx => new StunOptions { ServerHostnameBlacklist = ctx.GetRequiredService<IOptions<Configuration>>().Value.stunServerBlacklist });
 
 using IHost app = appConfig.Build();
 

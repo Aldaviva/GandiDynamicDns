@@ -18,7 +18,7 @@ public class DynamicDnsServiceTest {
 
     private readonly IOptions<Configuration> config = new OptionsWrapper<Configuration>(new Configuration {
         domain              = "example.com",
-        subdomain           = "www",
+        subdomains          = { "www" },
         gandiAuthToken      = "abcdef",
         dnsRecordTimeToLive = TimeSpan.FromMinutes(5),
         updateInterval      = TimeSpan.Zero
@@ -92,7 +92,7 @@ public class DynamicDnsServiceTest {
     public async Task dryRun() {
         service = new DynamicDnsServiceImpl(liveDns, stun, new OptionsWrapper<Configuration>(new Configuration {
             domain              = "example.com",
-            subdomain           = "www",
+            subdomains          = { "www" },
             gandiAuthToken      = "abcdef",
             dnsRecordTimeToLive = TimeSpan.FromMinutes(5),
             updateInterval      = TimeSpan.Zero,
@@ -118,7 +118,7 @@ public class DynamicDnsServiceTest {
 
         service = new DynamicDnsServiceImpl(liveDns, stun, new OptionsWrapper<Configuration>(new Configuration {
             domain              = "example.com",
-            subdomain           = "www",
+            subdomains          = { "www" },
             gandiAuthToken      = "abcdef",
             dnsRecordTimeToLive = TimeSpan.FromMinutes(5),
             updateInterval      = TimeSpan.FromMilliseconds(50)
@@ -131,7 +131,7 @@ public class DynamicDnsServiceTest {
             .Invokes(() => {
                 try {
                     latch.Signal();
-                } catch (InvalidOperationException) { }
+                } catch (InvalidOperationException) {}
             })
             .Returns(new SelfWanAddressResponse(IPAddress.Parse("192.0.2.2"), new DnsEndPoint("example.com", 3478), IPEndPoint.Parse("192.0.2.3")));
 
@@ -140,7 +140,7 @@ public class DynamicDnsServiceTest {
         await cts.CancelAsync();
         try {
             await service.ExecuteTask!;
-        } catch (TaskCanceledException) { }
+        } catch (TaskCanceledException) {}
 
         A.CallTo(() => liveDns.Get(RecordType.A, "www", A<CancellationToken>._)).MustHaveHappenedOnceExactly();
         A.CallTo(() => stun.GetSelfWanAddress(A<CancellationToken>._)).MustHaveHappenedANumberOfTimesMatching(i => i >= 3);
@@ -157,7 +157,7 @@ public class DynamicDnsServiceTest {
     public async Task unanimousAgreement() {
         service = new DynamicDnsServiceImpl(liveDns, stun, new OptionsWrapper<Configuration>(new Configuration {
             domain              = "example.com",
-            subdomain           = "www",
+            subdomains          = { "www" },
             gandiAuthToken      = "abcdef",
             dnsRecordTimeToLive = TimeSpan.FromMinutes(5),
             updateInterval      = TimeSpan.Zero,
@@ -184,7 +184,7 @@ public class DynamicDnsServiceTest {
     public async Task unanimousDisagreement() {
         service = new DynamicDnsServiceImpl(liveDns, stun, new OptionsWrapper<Configuration>(new Configuration {
             domain              = "example.com",
-            subdomain           = "www",
+            subdomains          = { "www" },
             gandiAuthToken      = "abcdef",
             dnsRecordTimeToLive = TimeSpan.FromMinutes(5),
             updateInterval      = TimeSpan.Zero,
@@ -211,7 +211,7 @@ public class DynamicDnsServiceTest {
     public async Task duplicateServers() {
         service = new DynamicDnsServiceImpl(liveDns, stun, new OptionsWrapper<Configuration>(new Configuration {
             domain              = "example.com",
-            subdomain           = "www",
+            subdomains          = { "www" },
             gandiAuthToken      = "abcdef",
             dnsRecordTimeToLive = TimeSpan.FromMinutes(5),
             updateInterval      = TimeSpan.Zero,

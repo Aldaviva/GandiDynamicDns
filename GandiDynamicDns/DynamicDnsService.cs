@@ -1,9 +1,9 @@
-﻿using Gandi;
+using Gandi;
 using Gandi.Dns;
 using Microsoft.Extensions.Options;
 using System.Diagnostics;
 using System.Net;
-using ThrottleDebounce;
+using ThrottleDebounce.Retry;
 using Unfucked;
 using Unfucked.HTTP.Exceptions;
 using Unfucked.STUN;
@@ -32,21 +32,25 @@ public class DynamicDnsServiceImpl(ILiveDns liveDns, ISelfWanAddressClient stun,
         null;
 #endif
 
+    /// <exception cref="GandiException"></exception>
     protected override async Task ExecuteAsync(CancellationToken ct) {
         try {
             foreach (string subdomain in configuration.Value.subdomains) {
                 // this retry is to handle the case where the service starts before the computer connects to the network on bootup, not where Gandi's API servers are down
                 await Retrier.Attempt(async _ => {
-                        IPAddress? initialRecordValue = null;
-                        if ((await liveDns.Get(RecordType.A, subdomain, ct))?.Values.First() is { } existingIpAddress) {
-                            try {
-                                initialRecordValue = IPAddress.Parse(existingIpAddress);
-                            } catch (FormatException) { }
-                        }
-                        initialRecordValues[subdomain] = initialRecordValue;
-                    }, maxAttempts: null, delay: Retrier.Delays.Constant(TimeSpan.FromSeconds(3)), ex => ex is not (OutOfMemoryException or GandiException { InnerException: ClientErrorException }),
-                    beforeRetry: async (i, e) =>
-                        logger.LogWarning("Failed to fetch existing DNS record from Gandi HTTP API server, retrying (attempt {attempt}): {message}", i + 2, e.MessageChain()), ct);
+                    IPAddress? initialRecordValue = null;
+                    if ((await liveDns.Get(RecordType.A, subdomain, ct))?.Values.First() is {} existingIpAddress) {
+                        try {
+                            initialRecordValue = IPAddress.Parse(existingIpAddress);
+                        } catch (FormatException) {}
+                    }
+                    initialRecordValues[subdomain] = initialRecordValue;
+                }, new RetryOptions {
+                    Delay             = Delays.Constant(TimeSpan.FromSeconds(3)),
+                    IsRetryAllowed    = (ex, _) => ex is not (OutOfMemoryException or GandiException { InnerException: ClientErrorException }),
+                    BeforeRetry       = (e, i) => logger.LogWarning("Failed to fetch existing DNS record from Gandi HTTP API server, retrying (attempt {attempt}): {message}", i + 2, e.MessageChain()),
+                    CancellationToken = ct
+                });
 
                 logger.LogInformation("On startup, the {subdomain}.{domain} DNS A record is pointing to {address}", subdomain, configuration.Value.domain,
                     initialRecordValues[subdomain]?.ToString() ?? "(nothing)");
@@ -79,6 +83,7 @@ public class DynamicDnsServiceImpl(ILiveDns liveDns, ISelfWanAddressClient stun,
         }
     }
 
+    /// <exception cref="GandiException"></exception>
     private async Task updateDnsRecordIfNecessary(CancellationToken ct = default) {
         SelfWanAddressResponse originalResponse = await stun.GetSelfWanAddress(ct);
         if (originalResponse.SelfWanAddress != null) {
@@ -126,6 +131,7 @@ public class DynamicDnsServiceImpl(ILiveDns liveDns, ISelfWanAddressClient stun,
         return extraResponses.All(extra => originalResponse.SelfWanAddress!.Equals(extra.SelfWanAddress));
     }
 
+    /// <exception cref="GandiException"></exception>
     private async Task updateDnsRecords(IPAddress currentIPAddress, CancellationToken ct = default) {
         foreach (string subdomain in configuration.Value.subdomains) {
             if (!configuration.Value.dryRun) {

@@ -16,9 +16,9 @@
         <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
         <ApplicationIcon>favicon.ico</ApplicationIcon>
         <ApplicationManifest>app.manifest</ApplicationManifest>
-        <!-- <PublishSingleFile>true</PublishSingleFile> -->
         <SelfContained>false</SelfContained>
         <DebugType>embedded</DebugType>
+        <RuntimeLibraryVersion>10.0.0</RuntimeLibraryVersion>
     </PropertyGroup>
 
     <ItemGroup>
@@ -29,16 +29,19 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Gandi" Version="1.0.0" />
-        <PackageReference Include="Microsoft.Extensions.Hosting.Systemd" Version="9.0.4" />
-        <PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="9.0.4" />
-        <PackageReference Include="ThrottleDebounce" Version="3.0.0-beta2" />
-        <PackageReference Include="Unfucked" Version="0.0.1-beta.1" />
-        <PackageReference Include="Unfucked.DI" Version="0.0.1-beta.1" />
-        <PackageReference Include="Unfucked.STUN" Version="0.0.1-beta.1" />
-        <PackageReference Include="RuntimeUpgradeNotifier" Version="1.0.0-beta3" />
+        <PackageReference Include="Gandi" Version="1.1.0" />
+        <PackageReference Include="Microsoft.Extensions.Hosting.Systemd" Version="$(RuntimeLibraryVersion)" />
+        <PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="$(RuntimeLibraryVersion)" />
+        <PackageReference Include="ThrottleDebounce" Version="3.0.0-beta5" />
+        <PackageReference Include="Unfucked" Version="0.0.1-beta.25" />
+        <PackageReference Include="Unfucked.DI" Version="0.0.1-beta.11" />
+        <PackageReference Include="Unfucked.HTTP" Version="0.0.1-beta.21" />
+        <PackageReference Include="Unfucked.STUN" Version="0.0.1-beta.3" />
+        <PackageReference Include="RuntimeUpgradeNotifier" Version="1.0.0" />
     </ItemGroup>
 
+    <Import Project="UnfuckProvidedDependencies.props" />
+    
     <ItemGroup Condition="$(RuntimeIdentifier.StartsWith('win'))">
         <None Update="Install service.ps1" CopyToOutputDirectory="PreserveNewest" />
     </ItemGroup>
