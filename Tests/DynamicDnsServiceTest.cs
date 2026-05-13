@@ -34,7 +34,7 @@ public class DynamicDnsServiceTest {
         A.CallTo(() => stun.GetSelfWanAddress(A<CancellationToken>._))
             .Returns(new SelfWanAddressResponse(IPAddress.Parse("192.0.2.2"), new DnsEndPoint("example.com", 3478), IPEndPoint.Parse("192.0.2.3")));
 
-        await service.StartAsync(CancellationToken.None);
+        await service.StartAsync(TestContext.Current.CancellationToken);
         await service.ExecuteTask!;
 
         A.CallTo(() => liveDns.Get(RecordType.A, "www", A<CancellationToken>._)).MustHaveHappenedOnceExactly();
@@ -49,7 +49,7 @@ public class DynamicDnsServiceTest {
         A.CallTo(() => stun.GetSelfWanAddress(A<CancellationToken>._))
             .Returns(new SelfWanAddressResponse(IPAddress.Parse("192.0.2.2"), new DnsEndPoint("example.com", 3478), IPEndPoint.Parse("192.0.2.3")));
 
-        await service.StartAsync(CancellationToken.None);
+        await service.StartAsync(TestContext.Current.CancellationToken);
         await service.ExecuteTask!;
 
         A.CallTo(() => liveDns.Get(RecordType.A, "www", A<CancellationToken>._)).MustHaveHappenedOnceExactly();
@@ -64,7 +64,7 @@ public class DynamicDnsServiceTest {
         A.CallTo(() => stun.GetSelfWanAddress(A<CancellationToken>._))
             .Returns(new SelfWanAddressResponse(IPAddress.Parse("192.0.2.2"), new DnsEndPoint("example.com", 3478), IPEndPoint.Parse("192.0.2.3")));
 
-        await service.StartAsync(CancellationToken.None);
+        await service.StartAsync(TestContext.Current.CancellationToken);
         await service.ExecuteTask!;
 
         A.CallTo(() => liveDns.Get(RecordType.A, "www", A<CancellationToken>._)).MustHaveHappenedOnceExactly();
@@ -79,7 +79,7 @@ public class DynamicDnsServiceTest {
         A.CallTo(() => stun.GetSelfWanAddress(A<CancellationToken>._))
             .Returns(new SelfWanAddressResponse(IPAddress.Parse("192.0.2.1"), new DnsEndPoint("example.com", 3478), IPEndPoint.Parse("192.0.2.3")));
 
-        await service.StartAsync(CancellationToken.None);
+        await service.StartAsync(TestContext.Current.CancellationToken);
         await service.ExecuteTask!;
 
         A.CallTo(() => liveDns.Get(RecordType.A, "www", A<CancellationToken>._)).MustHaveHappenedOnceExactly();
@@ -103,7 +103,7 @@ public class DynamicDnsServiceTest {
         A.CallTo(() => stun.GetSelfWanAddress(A<CancellationToken>._))
             .Returns(new SelfWanAddressResponse(IPAddress.Parse("192.0.2.2"), new DnsEndPoint("example.com", 3478), IPEndPoint.Parse("192.0.2.3")));
 
-        await service.StartAsync(CancellationToken.None);
+        await service.StartAsync(TestContext.Current.CancellationToken);
         await service.ExecuteTask!;
 
         A.CallTo(() => liveDns.Get(RecordType.A, "www", A<CancellationToken>._)).MustHaveHappenedOnceExactly();
@@ -136,7 +136,7 @@ public class DynamicDnsServiceTest {
             .Returns(new SelfWanAddressResponse(IPAddress.Parse("192.0.2.2"), new DnsEndPoint("example.com", 3478), IPEndPoint.Parse("192.0.2.3")));
 
         await service.StartAsync(cts.Token);
-        latch.Wait(10_000);
+        latch.Wait(10_000, TestContext.Current.CancellationToken);
         await cts.CancelAsync();
         try {
             await service.ExecuteTask!;
@@ -171,7 +171,7 @@ public class DynamicDnsServiceTest {
             new SelfWanAddressResponse(IPAddress.Parse("192.0.2.2"), new DnsEndPoint("example3.com", 3478), IPEndPoint.Parse("192.2.2.3"))
         );
 
-        await service.StartAsync(CancellationToken.None);
+        await service.StartAsync(TestContext.Current.CancellationToken);
         await service.ExecuteTask!;
 
         A.CallTo(() => liveDns.Get(RecordType.A, "www", A<CancellationToken>._)).MustHaveHappenedOnceExactly();
@@ -198,7 +198,7 @@ public class DynamicDnsServiceTest {
             new SelfWanAddressResponse(IPAddress.Parse("192.0.2.3"), new DnsEndPoint("example3.com", 3478), IPEndPoint.Parse("192.2.2.3"))
         );
 
-        await service.StartAsync(CancellationToken.None);
+        await service.StartAsync(TestContext.Current.CancellationToken);
         await service.ExecuteTask!;
 
         A.CallTo(() => liveDns.Get(RecordType.A, "www", A<CancellationToken>._)).MustHaveHappenedOnceExactly();
@@ -226,7 +226,7 @@ public class DynamicDnsServiceTest {
             new SelfWanAddressResponse(IPAddress.Parse("192.0.2.2"), new DnsEndPoint("example3.com", 3478), IPEndPoint.Parse("192.2.2.3"))
         );
 
-        await service.StartAsync(CancellationToken.None);
+        await service.StartAsync(TestContext.Current.CancellationToken);
         await service.ExecuteTask!;
 
         A.CallTo(() => liveDns.Get(RecordType.A, "www", A<CancellationToken>._)).MustHaveHappenedOnceExactly();

@@ -1,4 +1,4 @@
-﻿// ReSharper disable PropertyCanBeMadeInitOnly.Global - set by config
+// ReSharper disable PropertyCanBeMadeInitOnly.Global - set by config
 // ReSharper disable MemberCanBePrivate.Global - set by config
 
 using Gandi.Dns;

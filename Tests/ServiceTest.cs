@@ -1,4 +1,4 @@
-﻿using Gandi;
+using Gandi;
 using Gandi.Dns;
 using GandiDynamicDns;
 using GandiDynamicDns.Util;
@@ -34,7 +34,7 @@ public sealed class ServiceTest: IDisposable {
         };
 
         Task mainTask = runMainMethod();
-        hostInterceptor.host?.StopAsync();
+        hostInterceptor.host?.StopAsync(TestContext.Current.CancellationToken);
         await mainTask;
     }
 

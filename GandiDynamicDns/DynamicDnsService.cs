@@ -53,7 +53,7 @@ public class DynamicDnsServiceImpl(ILiveDns liveDns, ISelfWanAddressClient stun,
                 });
 
                 logger.LogInformation("On startup, the {subdomain}.{domain} DNS A record is pointing to {address}", subdomain, configuration.Value.domain,
-                    initialRecordValues[subdomain]?.ToString() ?? "(nothing)");
+                    initialRecordValues[subdomain]?.ToString() ?? "(null)");
             }
 
             if (configuration.Value.updateInterval > ONE_SHOT_MODE) {
@@ -64,7 +64,7 @@ public class DynamicDnsServiceImpl(ILiveDns liveDns, ISelfWanAddressClient stun,
                 await updateDnsRecordIfNecessary(ct);
 
                 if (configuration.Value.updateInterval > ONE_SHOT_MODE) {
-                    await Tasks.Delay(configuration.Value.updateInterval, ct);
+                    await Task.LongDelay(configuration.Value.updateInterval, ct);
                 } else {
                     logger.LogInformation(
                         $"Exiting after one public IP address check. To continue running and checking for IP address changes repeatedly, set {nameof(Configuration.updateInterval)} to a {nameof(TimeSpan)} longer than {{zero}} in appsettings.json.",
@@ -97,6 +97,7 @@ public class DynamicDnsServiceImpl(ILiveDns liveDns, ISelfWanAddressClient stun,
                         "This computer's public IP address changed from {old} to {new} according to {server} ({serverAddr}) and {extraServerCount:N0} other STUN servers, updating {recordCount} A records in DNS server",
                         selfWanAddress, originalResponse.SelfWanAddress, originalResponse.Server.Host, originalResponse.ServerAddress.ToString(), unanimity - 1, configuration.Value.subdomains.Count);
 #if WINDOWS
+                    // TODO this fails in tests on Windows Server 2025 (but not 2022) with InvalidOperationException: Cannot open log for source 'GandiDynamicDns'. You may not have write access.
                     eventLog?.WriteEntry(
                         $"This computer's public IP address changed from {selfWanAddress} to {originalResponse.SelfWanAddress}, according to {originalResponse.Server.Host} ({originalResponse.ServerAddress}) and {unanimity - 1:N0} others, updating {configuration.Value.subdomains.Count} A records in DNS server",
                         EventLogEntryType.Information, 1);
@@ -136,7 +137,7 @@ public class DynamicDnsServiceImpl(ILiveDns liveDns, ISelfWanAddressClient stun,
         foreach (string subdomain in configuration.Value.subdomains) {
             if (!configuration.Value.dryRun) {
                 try {
-                    await liveDns.Set(new DnsRecord(RecordType.A, subdomain, configuration.Value.dnsRecordTimeToLive, [currentIPAddress.ToString()]), ct);
+                    await liveDns.Set(new DnsRecord(RecordType.A, subdomain, configuration.Value.dnsRecordTimeToLive, currentIPAddress.ToString()), ct);
                 } catch (GandiException e) {
                     logger.LogError(e, "Failed to update DNS record for {subdomain}.{domain} to {newAddr} due to DNS API server error", subdomain, configuration.Value.domain, currentIPAddress);
                     if (e is GandiException.AuthException or { InnerException: ForbiddenException or NotAuthorizedException }) {

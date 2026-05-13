@@ -49,7 +49,8 @@ using IHost app = appConfig.Build();
 
 using RuntimeUpgradeNotifier upgradeNotifier = new() {
     LoggerFactory   = app.Services.GetRequiredService<ILoggerFactory>(),
-    RestartStrategy = RestartStrategy.AutoRestartService
+    RestartStrategy = RestartStrategy.AutoRestartService,
+    ExitStrategy    = new HostedLifetimeExit(app)
 };
 
 await app.RunAsync();

@@ -7,10 +7,11 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <RollForward>latestMajor</RollForward>
-        <NoWarn>$(NoWarn);8524;VSTHRD200</NoWarn>
-        <Version>0.5.0</Version>
+        <LangVersion>latest</LangVersion>
+        <NoWarn>$(NoWarn);VSTHRD200</NoWarn>
+        <Version>0.5.1</Version>
         <Authors>Ben Hutchison</Authors>
-        <Copyright>© 2025 $(Authors)</Copyright>
+        <Copyright>© 2026 $(Authors)</Copyright>
         <Company>$(Authors)</Company>
         <AssemblyTitle>Gandi Dynamic DNS</AssemblyTitle>
         <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
@@ -18,7 +19,6 @@
         <ApplicationManifest>app.manifest</ApplicationManifest>
         <SelfContained>false</SelfContained>
         <DebugType>embedded</DebugType>
-        <RuntimeLibraryVersion>9.0.11</RuntimeLibraryVersion>
     </PropertyGroup>
 
     <ItemGroup>
@@ -29,19 +29,16 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Gandi" Version="1.1.0" />
-        <PackageReference Include="Microsoft.Extensions.Hosting.Systemd" Version="$(RuntimeLibraryVersion)" />
-        <PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="$(RuntimeLibraryVersion)" />
-        <PackageReference Include="ThrottleDebounce" Version="3.0.0-beta5" />
-        <PackageReference Include="Unfucked" Version="0.0.1-beta.25" />
-        <PackageReference Include="Unfucked.DI" Version="0.0.1-beta.11" />
-        <PackageReference Include="Unfucked.HTTP" Version="0.0.1-beta.21" />
-        <PackageReference Include="Unfucked.STUN" Version="0.0.1-beta.3" />
-        <PackageReference Include="RuntimeUpgradeNotifier" Version="1.0.0" />
+        <PackageReference Include="Gandi" Version="1.1.2" />
+        <PackageReference Include="Microsoft.Extensions.Hosting.Systemd" Version="8.0.1" />
+        <PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="8.0.1" />
+        <PackageReference Include="ThrottleDebounce" Version="3.0.0-beta6" />
+        <PackageReference Include="Unfucked.DI" Version="0.0.1-beta.16" />
+        <PackageReference Include="Unfucked.HTTP" Version="0.0.1-beta.30" />
+        <PackageReference Include="Unfucked.STUN" Version="0.0.1-beta.4" />
+        <PackageReference Include="RuntimeUpgradeNotifier" Version="1.2.0-beta.1" />
     </ItemGroup>
 
-    <Import Project="UnfuckProvidedDependencies.props" />
-    
     <ItemGroup Condition="$(RuntimeIdentifier.StartsWith('win'))">
         <None Update="Install service.ps1" CopyToOutputDirectory="PreserveNewest" />
     </ItemGroup>
@@ -53,5 +50,7 @@
     <PropertyGroup Condition="$(RuntimeIdentifier.StartsWith('linux'))">
         <AssemblyName>$(AssemblyName.ToLower())</AssemblyName>
     </PropertyGroup>
+
+    <Import Project="providedDependencies.g.props" />
 
 </Project>
