@@ -32,7 +32,7 @@
 
     <ItemGroup>
         <PackageReference Include="Gandi" Version="1.1.2" />
-        <PackageReference Include="Microsoft.Extensions.Hosting.Systemd" Version="8.0.1" />
+        <PackageReference Include="Microsoft.Extensions.Hosting.Systemd" Version="10.0.8" />
         <PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="8.0.1" />
         <PackageReference Include="ThrottleDebounce" Version="3.0.0-beta6" />
         <PackageReference Include="Unfucked.DI" Version="0.0.1-beta.16" />
