@@ -1,4 +1,4 @@
-﻿namespace Tests.Mocks;
+namespace Tests.Mocks;
 
 /**
  * https://fakeiteasy.github.io/docs/8.2.0/Recipes/faking-http-client/#easier-and-safer-call-configuration

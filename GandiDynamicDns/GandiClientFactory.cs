@@ -1,4 +1,4 @@
-﻿using Gandi;
+using Gandi;
 using Microsoft.Extensions.Options;
 
 namespace GandiDynamicDns;

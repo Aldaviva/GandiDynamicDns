@@ -1,4 +1,4 @@
-﻿namespace GandiDynamicDns.Util;
+namespace GandiDynamicDns.Util;
 
 public readonly struct WindowsService {
 
