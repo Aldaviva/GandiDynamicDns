@@ -70,13 +70,13 @@
       },
       "Unfucked.STUN": {
         "type": "Direct",
-        "requested": "[0.0.1-beta.4, )",
-        "resolved": "0.0.1-beta.4",
-        "contentHash": "xn0kFYKK7F0Ns8OFmvHPz6YsTbxp1+izIUzH0ayVJFov79Bf1MUc2w5kjBBWPAZYn+MkZNu/VRdg+e8oOPw7kA==",
+        "requested": "[0.0.1-beta.5, )",
+        "resolved": "0.0.1-beta.5",
+        "contentHash": "E42cPnVLKSdakkr4rlvOolAQycK8EJ+GeeihTTrqbwHTrTsAZwIfqQ3Uh5wec8UrG3D/dSbbfXLkCgZmRE6CGg==",
         "dependencies": {
           "Stun.Net": "9.0.1",
-          "Unfucked": "0.0.1-beta.31",
-          "Unfucked.Caching": "0.0.1-beta.3"
+          "Unfucked": "0.0.1-beta.48",
+          "Unfucked.Caching": "0.0.1-beta.6"
         }
       },
       "Microsoft.CSharp": {
@@ -433,13 +433,13 @@
       },
       "Unfucked": {
         "type": "Transitive",
-        "resolved": "0.0.1-beta.46",
-        "contentHash": "yaH4FwHRdSMF1Bfh6MAE/XHRKrvsPgHK6r+4Iod0XrchO8wcdU18c+z0sH4tIMHG5nIHNoeFOsUlPsrr9St7QQ=="
+        "resolved": "0.0.1-beta.48",
+        "contentHash": "Cs2SNUfC+vJ7rj//ucEVFoIhvR6NxRJ2niGD32UmUxh9ZVcxIPaYfZu1wEfgvDnNWxQQJ46pVF+Hwy4WKatcLQ=="
       },
       "Unfucked.Caching": {
         "type": "Transitive",
-        "resolved": "0.0.1-beta.3",
-        "contentHash": "TRHrSn79hGh/EBHiciUU/uXj5UBqo2CTaiwFfQqomDj6ak3VdkVkZzHyF7WAk7xkLBRIIP7NciLoftP6RsFnBw=="
+        "resolved": "0.0.1-beta.6",
+        "contentHash": "sM29d8zoe+O0Vv6Q5JJmnRgL0u50xJ34zjkZdLB8rayKAo/pFn7xuLHV3hzMHR52BqVQT/GVGGgkp4Xv0cIpOw=="
       }
     },
     "net8.0-windows7.0/win-arm64": {
